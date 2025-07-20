@@ -1,103 +1,195 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { motion } from 'framer-motion'; // For animations
+
+interface OverviewData {
+  memberCount: number;
+  totalProjects: number;
+}
+
+interface Project {
+  project_id: string;
+  project_name: string;
+  description: string;
+  images: string[];
+  created_by: {
+    first_name: string;
+    last_name: string;
+  };
+}
+
+export default function LandingPage() {
+  const [overviewData, setOverviewData] = useState<OverviewData | null>(null);
+  const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        // Fetch overview data
+        const overviewResponse = await fetch(`${backendUrl}/api/dashboard/overview`);
+        if (overviewResponse.ok) {
+          const data = await overviewResponse.json();
+          setOverviewData(data);
+        } else {
+          console.error('Failed to fetch overview data:', await overviewResponse.json());
+        }
+
+        // Fetch featured projects (e.g., first 3 approved projects)
+        const projectsResponse = await fetch(`${backendUrl}/api/projects/portfolio`);
+        if (projectsResponse.ok) {
+          const data = await projectsResponse.json();
+          setFeaturedProjects(data.slice(0, 3)); // Take first 3 as featured
+        } else {
+          console.error('Failed to fetch featured projects:', await projectsResponse.json());
+        }
+
+      } catch (err: any) {
+        setError('An unexpected error occurred: ' + err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 },
+  };
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading landing page...</div>;
+  if (error) return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>;
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 text-gray-800">
+      {/* Hero Section */}
+      <section className="relative h-screen flex items-center justify-center text-center overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          {/* Background animation or image */}
+          <div className="absolute inset-0 bg-cover bg-center animate-pulse-bg" style={{ backgroundImage: 'url(/next.svg)' }}></div>
+          <div className="absolute inset-0 bg-black opacity-20"></div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        <motion.div
+          className="z-10 p-8 bg-white bg-opacity-80 rounded-lg shadow-xl backdrop-blur-sm"
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+          <h1 className="text-5xl font-extrabold text-indigo-800 mb-4">
+            Welcome to Our Team Portfolio
+          </h1>
+          <p className="text-xl text-gray-700 mb-6 max-w-2xl mx-auto">
+            Showcasing innovative projects and the talented individuals behind them.
+          </p>
+          <Link href="/portfolio" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300 ease-in-out transform hover:scale-105">
+            Explore Projects
+          </Link>
+        </motion.div>
+      </section>
+
+      {/* Overview Section */}
+      {overviewData && (
+        <section className="py-20 bg-white text-center">
+          <motion.div
+            className="max-w-4xl mx-auto px-4"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.5 }}
+            variants={containerVariants}
+          >
+            <motion.h2 variants={itemVariants} className="text-4xl font-bold text-gray-800 mb-10">
+              Our Impact
+            </motion.h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <motion.div variants={itemVariants} className="bg-blue-50 p-8 rounded-lg shadow-md">
+                <h3 className="text-5xl font-extrabold text-blue-600">{overviewData.memberCount}</h3>
+                <p className="text-xl text-gray-700 mt-2">Talented Members</p>
+              </motion.div>
+              <motion.div variants={itemVariants} className="bg-green-50 p-8 rounded-lg shadow-md">
+                <h3 className="text-5xl font-extrabold text-green-600">{overviewData.totalProjects}</h3>
+                <p className="text-xl text-gray-700 mt-2">Completed Projects</p>
+              </motion.div>
+            </div>
+          </motion.div>
+        </section>
+      )}
+
+      {/* Featured Projects Section */}
+      {featuredProjects.length > 0 && (
+        <section className="py-20 bg-gray-100">
+          <motion.div
+            className="max-w-7xl mx-auto px-4"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.5 }}
+            variants={containerVariants}
+          >
+            <motion.h2 variants={itemVariants} className="text-4xl font-bold text-center text-gray-800 mb-12">
+              Featured Projects
+            </motion.h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredProjects.map((project) => (
+                <motion.div
+                  key={project.project_id}
+                  variants={itemVariants}
+                  className="bg-white rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:scale-105"
+                >
+                  {project.images && project.images.length > 0 && (
+                    <div className="relative w-full h-48 bg-gray-200">
+                      <Image
+                        src={`${backendUrl}${project.images[0]}`}
+                        alt={project.project_name}
+                        layout="fill"
+                        objectFit="cover"
+                        className="w-full h-full"
+                      />
+                    </div>
+                  )}
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold mb-2 text-indigo-700">{project.project_name}</h3>
+                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">{project.description}</p>
+                    <p className="text-gray-500 text-xs">By: {project.created_by.first_name} {project.created_by.last_name}</p>
+                    <div className="mt-4 flex justify-end">
+                      <Link href={`/projects/${project.project_id}`} className="text-blue-600 hover:underline">
+                        View Details
+                      </Link>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+            <motion.div variants={itemVariants} className="text-center mt-12">
+              <Link href="/portfolio" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300 ease-in-out transform hover:scale-105">
+                View All Projects
+              </Link>
+            </motion.div>
+          </motion.div>
+        </section>
+      )}
+
+      {/* Footer */}
+      <footer className="py-8 text-center text-gray-600 text-sm">
+        <p>&copy; {new Date().getFullYear()} Your Team Name. All rights reserved.</p>
       </footer>
-    </div>
+    </main>
   );
 }
