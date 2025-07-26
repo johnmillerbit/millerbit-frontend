@@ -46,6 +46,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import Cookies from "js-cookie";
 
 // Define the type for your member data
@@ -579,7 +588,7 @@ export default function MemberManagementPage() {
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const [membersPerPage] = useState(1); // Limit to 10 members per page
+  const [membersPerPage] = useState(10); // Limit to 10 members per page
 
   const fetchMembers = async () => {
     try {
@@ -817,27 +826,38 @@ export default function MemberManagementPage() {
                     )}
                   </TableBody>
                 </Table>
-                {/* Pagination Controls */}
+                {/* Shadcn UI Pagination Controls */}
                 {members.length > membersPerPage && (
-                  <div className="flex justify-center items-center space-x-2 py-4">
-                    <Button
-                      onClick={() => paginate(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className="bg-purple-600 hover:bg-purple-700 text-white"
-                    >
-                      Previous
-                    </Button>
-                    <span className="text-gray-300">
-                      Page {currentPage} of {totalPages}
-                    </span>
-                    <Button
-                      onClick={() => paginate(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      className="bg-purple-600 hover:bg-purple-700 text-white"
-                    >
-                      Next
-                    </Button>
-                  </div>
+                  <Pagination className="py-4">
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() => {
+                            if (currentPage > 1) paginate(currentPage - 1);
+                          }}
+                          className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+                      {Array.from({ length: totalPages }, (_, i) => (
+                        <PaginationItem key={i}>
+                          <PaginationLink
+                            onClick={() => paginate(i + 1)}
+                            isActive={currentPage === i + 1}
+                          >
+                            {i + 1}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ))}
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={() => {
+                            if (currentPage < totalPages) paginate(currentPage + 1);
+                          }}
+                          className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
                 )}
               </div>
             )}
