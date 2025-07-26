@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select components
 import Cookies from 'js-cookie';
 import Image from 'next/image';
 
@@ -31,6 +32,11 @@ export type MemberDetail = {
   skills?: string[];
 };
 
+type Skill = {
+  skill_id: string;
+  skill_name: string;
+};
+
 export default function EditMemberProfilePage() {
   const params = useParams();
   const router = useRouter();
@@ -41,18 +47,19 @@ export default function EditMemberProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const [formSuccess, setFormSuccess] = useState<string | null>(null); // New state for form success
+  const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [formData, setFormData] = useState<MemberDetail | null>(null);
   const [currentSkills, setCurrentSkills] = useState<string[]>([]);
+  const [availableSkills, setAvailableSkills] = useState<Skill[]>([]); // New state for all available skills
   const [profilePictureFile, setProfilePictureFile] = useState<File | null>(null);
-  const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(null); // New state for image preview
+  const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
   const [imageUploadSuccess, setImageUploadSuccess] = useState<string | null>(null);
   const [skillInput, setSkillInput] = useState('');
   const [dragActive, setDragActive] = useState(false);
 
-  const fileInputRef = useRef<HTMLInputElement>(null); // Ref for file input
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!userId) {
@@ -61,11 +68,11 @@ export default function EditMemberProfilePage() {
       return;
     }
 
-    const fetchMemberData = async () => {
+    const fetchAllData = async () => {
       setLoading(true);
       setError(null);
       setFormError(null);
-      setFormSuccess(null); // Reset on new fetch
+      setFormSuccess(null);
       try {
         const token = Cookies.get('token');
         if (!token) {
@@ -89,20 +96,28 @@ export default function EditMemberProfilePage() {
         const memberData: MemberDetail = await memberResponse.json();
         setMember(memberData);
         setFormData(memberData);
-        // Set initial preview if an image URL exists
         if (memberData.profile_picture_url) {
             setProfilePicturePreview(`http://localhost:5000${memberData.profile_picture_url}`);
         }
 
+        // Fetch All Available Skills
+        const allSkillsResponse = await fetch(`http://localhost:5000/api/skills`, { headers });
+        if (!allSkillsResponse.ok) {
+          console.warn(`Failed to fetch all skills: ${allSkillsResponse.status}`);
+          setAvailableSkills([]);
+        } else {
+          const allSkillsData: Skill[] = await allSkillsResponse.json();
+          setAvailableSkills(allSkillsData);
+        }
 
         // Fetch Member Skills
-        const skillsResponse = await fetch(`http://localhost:5000/api/users/${userId}/skills`, { headers });
-        if (!skillsResponse.ok) {
-          console.warn(`Failed to fetch skills for user ${userId}: ${skillsResponse.status}`);
+        const userSkillsResponse = await fetch(`http://localhost:5000/api/users/${userId}/skills`, { headers });
+        if (!userSkillsResponse.ok) {
+          console.warn(`Failed to fetch skills for user ${userId}: ${userSkillsResponse.status}`);
           setCurrentSkills([]);
         } else {
-          const skillsData: { skill_id: string; skill_name: string }[] = await skillsResponse.json();
-          setCurrentSkills(skillsData.map(s => s.skill_name));
+          const userSkillsData: Skill[] = await userSkillsResponse.json();
+          setCurrentSkills(userSkillsData.map(s => s.skill_name));
         }
 
       } catch (err: any) {
@@ -112,7 +127,7 @@ export default function EditMemberProfilePage() {
       }
     };
 
-    fetchMemberData();
+    fetchAllData();
   }, [userId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -128,6 +143,12 @@ export default function EditMemberProfilePage() {
         setCurrentSkills(prev => [...prev, newSkill]);
       }
       setSkillInput('');
+    }
+  };
+
+  const handleSelectSkill = (skillName: string) => {
+    if (!currentSkills.includes(skillName)) {
+      setCurrentSkills(prev => [...prev, skillName]);
     }
   };
 
@@ -615,14 +636,28 @@ export default function EditMemberProfilePage() {
                     <Code2 className="h-4 w-4 text-cyan-400" />
                     Skills & Expertise
                   </Label>
-                  
-                  <Input
-                    value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
-                    onKeyDown={handleAddSkill}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300 rounded-xl h-12"
-                    placeholder="Type a skill and press Enter to add..."
-                  />
+
+                  <div className="flex flex-col md:flex-row gap-2">
+                    <Select onValueChange={handleSelectSkill}>
+                      <SelectTrigger className="w-full md:w-[200px] bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300 rounded-xl py-6">
+                        <SelectValue placeholder="Select a skill" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                        {availableSkills.map((skill) => (
+                          <SelectItem key={skill.skill_id} value={skill.skill_name}>
+                            {skill.skill_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      value={skillInput}
+                      onChange={(e) => setSkillInput(e.target.value)}
+                      onKeyDown={handleAddSkill}
+                      className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-slate-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all duration-300 rounded-xl py-4 md:py-6"
+                      placeholder="Or type a new skill and press Enter..."
+                    />
+                  </div>
                   
                   {currentSkills.length > 0 && (
                     <div className="flex flex-wrap gap-3 p-4 bg-white/5 rounded-xl border border-white/10">
