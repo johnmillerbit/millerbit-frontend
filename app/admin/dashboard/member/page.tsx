@@ -389,6 +389,180 @@ const EditMemberForm: React.FC<EditMemberFormProps> = ({
   );
 };
 
+interface ViewMemberDialogProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  member: Member | null;
+}
+
+const ViewMemberDialog: React.FC<ViewMemberDialogProps> = ({
+  isOpen,
+  onOpenChange,
+  member,
+}) => {
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="bg-gray-900 border-gray-700 text-white sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle className="text-white">Member Details</DialogTitle>
+          <DialogDescription className="text-gray-400">
+            Detailed information about the selected member.
+          </DialogDescription>
+        </DialogHeader>
+        {member ? (
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <p className="text-gray-300 col-span-1">ID:</p>
+              <p className="col-span-3 font-semibold break-all">
+                {member.user_id}
+              </p>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <p className="text-gray-300 col-span-1">Name:</p>
+              <p className="col-span-3 font-semibold">
+                {member.first_name} {member.last_name}
+              </p>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <p className="text-gray-300 col-span-1">Email:</p>
+              <p className="col-span-3">{member.email}</p>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <p className="text-gray-300 col-span-1">Position:</p>
+              <p className="col-span-3">{member.position}</p>
+            </div>
+            {member.created_at && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <p className="text-gray-300 col-span-1">Joined:</p>
+                <p className="col-span-3">
+                  {new Date(member.created_at).toLocaleDateString()}
+                </p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="text-gray-400">No member selected.</p>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+interface EditMemberDialogProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  member: Member | null;
+  onSave: (updatedMember: Member) => void;
+}
+
+const EditMemberDialog: React.FC<EditMemberDialogProps> = ({
+  isOpen,
+  onOpenChange,
+  member,
+  onSave,
+}) => {
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="bg-gray-900 border-gray-700 text-white sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle className="text-white">Edit Member</DialogTitle>
+          <DialogDescription className="text-gray-400">
+            Make changes to the member's profile here. Click save when you're
+            done.
+          </DialogDescription>
+        </DialogHeader>
+        {member ? (
+          <EditMemberForm
+            member={member}
+            onSave={onSave}
+            onCancel={() => onOpenChange(false)}
+            onCloseDialog={() => onOpenChange(false)}
+          />
+        ) : (
+          <p className="text-gray-400">No member selected for editing.</p>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+interface CreateMemberDialogProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSave: (newMember: Member) => void;
+}
+
+const CreateMemberDialog: React.FC<CreateMemberDialogProps> = ({
+  isOpen,
+  onOpenChange,
+  onSave,
+}) => {
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="bg-gray-900 border-gray-700 text-white sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle className="text-white">Create New Member</DialogTitle>
+          <DialogDescription className="text-gray-400">
+            Fill in the details for the new member.
+          </DialogDescription>
+        </DialogHeader>
+        <CreateMemberForm
+          onSave={onSave}
+          onCloseDialog={() => onOpenChange(false)}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+interface DeleteConfirmationDialogProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  memberToDelete: Member | null;
+  onConfirm: () => void;
+}
+
+const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({
+  isOpen,
+  onOpenChange,
+  memberToDelete,
+  onConfirm,
+}) => {
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="bg-gray-900 border-gray-700 text-white sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle className="text-white">Confirm Deletion</DialogTitle>
+          <DialogDescription className="text-gray-400">
+            Are you sure you want to delete{" "}
+            <span className="font-semibold text-white">
+              {memberToDelete?.first_name} {memberToDelete?.last_name}
+            </span>
+            ? This action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex justify-end gap-2 mt-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="border-gray-600 text-gray-300 hover:bg-gray-700 bg-transparent"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            onClick={onConfirm}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            Delete
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 // Main MemberManagementPage Component
 export default function MemberManagementPage() {
   const [members, setMembers] = useState<Member[]>([]);
@@ -642,132 +816,31 @@ export default function MemberManagementPage() {
         </Card>
       </div>
 
-      {/* View Member Dialog */}
-      <Dialog
-        open={isViewMemberDialogOpen}
+      <ViewMemberDialog
+        isOpen={isViewMemberDialogOpen}
         onOpenChange={setIsViewMemberDialogOpen}
-      >
-        <DialogContent className="bg-gray-900 border-gray-700 text-white sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="text-white">Member Details</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Detailed information about the selected member.
-            </DialogDescription>
-          </DialogHeader>
-          {selectedMember ? (
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <p className="text-gray-300 col-span-1">ID:</p>
-                <p className="col-span-3 font-semibold break-all">
-                  {selectedMember.user_id}
-                </p>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <p className="text-gray-300 col-span-1">Name:</p>
-                <p className="col-span-3 font-semibold">
-                  {selectedMember.first_name} {selectedMember.last_name}
-                </p>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <p className="text-gray-300 col-span-1">Email:</p>
-                <p className="col-span-3">{selectedMember.email}</p>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <p className="text-gray-300 col-span-1">Position:</p>
-                <p className="col-span-3">{selectedMember.position}</p>
-              </div>
-              {selectedMember.created_at && (
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <p className="text-gray-300 col-span-1">Joined:</p>
-                  <p className="col-span-3">
-                    {new Date(selectedMember.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-              )}
-            </div>
-          ) : (
-            <p className="text-gray-400">No member selected.</p>
-          )}
-        </DialogContent>
-      </Dialog>
+        member={selectedMember}
+      />
 
-      {/* Edit Member Dialog */}
-      <Dialog
-        open={isEditMemberDialogOpen}
+      <EditMemberDialog
+        isOpen={isEditMemberDialogOpen}
         onOpenChange={setIsEditMemberDialogOpen}
-      >
-        <DialogContent className="bg-gray-900 border-gray-700 text-white sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="text-white">Edit Member</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Make changes to the member's profile here. Click save when you're
-              done.
-            </DialogDescription>
-          </DialogHeader>
-          {selectedMember ? (
-            <EditMemberForm
-              member={selectedMember}
-              onSave={handleMemberUpdated}
-              onCancel={() => setIsEditMemberDialogOpen(false)}
-              onCloseDialog={() => setIsEditMemberDialogOpen(false)}
-            />
-          ) : (
-            <p className="text-gray-400">No member selected for editing.</p>
-          )}
-        </DialogContent>
-      </Dialog>
+        member={selectedMember}
+        onSave={handleMemberUpdated}
+      />
 
-      {/* Create Member Dialog */}
-      <Dialog
-        open={isCreateMemberDialogOpen}
+      <CreateMemberDialog
+        isOpen={isCreateMemberDialogOpen}
         onOpenChange={setIsCreateMemberDialogOpen}
-      >
-        <DialogContent className="bg-gray-900 border-gray-700 text-white sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="text-white">Create New Member</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Fill in the details for the new member.
-            </DialogDescription>
-          </DialogHeader>
-          <CreateMemberForm
-            onSave={handleMemberCreated}
-            onCloseDialog={() => setIsCreateMemberDialogOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
+        onSave={handleMemberCreated}
+      />
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="bg-gray-900 border-gray-700 text-white sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="text-white">Confirm Deletion</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Are you sure you want to delete{" "}
-              <span className="font-semibold text-white">
-                {memberToDelete?.first_name} {memberToDelete?.last_name}
-              </span>
-              ? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-end gap-2 mt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsDeleteDialogOpen(false)}
-              className="border-gray-600 text-gray-300 hover:bg-gray-700 bg-transparent"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              onClick={confirmDeleteMember}
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              Delete
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <DeleteConfirmationDialog
+        isOpen={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        memberToDelete={memberToDelete}
+        onConfirm={confirmDeleteMember}
+      />
     </div>
   );
 }
