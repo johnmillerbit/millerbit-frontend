@@ -572,10 +572,14 @@ export default function MemberManagementPage() {
   const [isViewMemberDialogOpen, setIsViewMemberDialogOpen] = useState(false);
   const [isEditMemberDialogOpen, setIsEditMemberDialogOpen] = useState(false);
   const [isCreateMemberDialogOpen, setIsCreateMemberDialogOpen] =
-    useState(false); // New state for create dialog
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false); // New state for delete confirmation dialog
-  const [memberToDelete, setMemberToDelete] = useState<Member | null>(null); // State to hold member to be deleted
+    useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [membersPerPage] = useState(1); // Limit to 10 members per page
 
   const fetchMembers = async () => {
     try {
@@ -624,13 +628,11 @@ export default function MemberManagementPage() {
   };
 
   const handleCreateNewMember = () => {
-    setIsCreateMemberDialogOpen(true); // Open create dialog
+    setIsCreateMemberDialogOpen(true);
   };
 
   const handleMemberCreated = (newMember: Member) => {
-    // Add the new member to the top of the list or sort as needed
     setMembers((prevMembers) => [newMember, ...prevMembers]);
-    // The dialog will be closed by the form itself
   };
 
   const handleMemberUpdated = (updatedMember: Member) => {
@@ -639,7 +641,6 @@ export default function MemberManagementPage() {
         m.user_id === updatedMember.user_id ? updatedMember : m
       )
     );
-    // Dialog will be closed by the form itself
   };
 
   const handleDeleteMemberClick = (member: Member) => {
@@ -677,14 +678,23 @@ export default function MemberManagementPage() {
       setMembers((prevMembers) =>
         prevMembers.filter((m) => m.user_id !== memberToDelete.user_id)
       );
-      setIsDeleteDialogOpen(false); // Close dialog on success
-      setMemberToDelete(null); // Clear member to delete
+      setIsDeleteDialogOpen(false);
+      setMemberToDelete(null);
     } catch (err: any) {
       setError(err.message || "Failed to delete member.");
-      setIsDeleteDialogOpen(false); // Close dialog even on error
-      setMemberToDelete(null); // Clear member to delete
+      setIsDeleteDialogOpen(false);
+      setMemberToDelete(null);
     }
   };
+
+  // Pagination logic
+  const indexOfLastMember = currentPage * membersPerPage;
+  const indexOfFirstMember = indexOfLastMember - membersPerPage;
+  const currentMembers = members.slice(indexOfFirstMember, indexOfLastMember);
+
+  const totalPages = Math.ceil(members.length / membersPerPage);
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
@@ -695,15 +705,12 @@ export default function MemberManagementPage() {
 
         <Card className="bg-slate-800/80 border-slate-700 text-white shadow-lg backdrop-blur-sm">
           <CardHeader className="flex flex-row items-center justify-between">
-            {" "}
-            {/* Added flex for alignment */}
             <div>
               <CardTitle className="text-xl text-white">All Members</CardTitle>
               <CardDescription className="text-slate-400">
                 A list of all registered members.
               </CardDescription>
             </div>
-            {/* New Create Member Button */}
             <Button
               onClick={handleCreateNewMember}
               className="bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-2"
@@ -748,8 +755,8 @@ export default function MemberManagementPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {members.length > 0 ? (
-                      members.map((member) => (
+                    {currentMembers.length > 0 ? (
+                      currentMembers.map((member) => (
                         <TableRow
                           key={member.user_id}
                           className="border-gray-700 hover:bg-gray-700/30 transition-colors"
@@ -810,6 +817,28 @@ export default function MemberManagementPage() {
                     )}
                   </TableBody>
                 </Table>
+                {/* Pagination Controls */}
+                {members.length > membersPerPage && (
+                  <div className="flex justify-center items-center space-x-2 py-4">
+                    <Button
+                      onClick={() => paginate(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                      Previous
+                    </Button>
+                    <span className="text-gray-300">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                      onClick={() => paginate(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
