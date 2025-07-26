@@ -1,339 +1,228 @@
 "use client";
+import React from "react"
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { motion } from 'framer-motion'; // For animations
-import Cookies from 'js-cookie'; // Needed for fetching users/skills for filters
+// Self-contained SVG icon for the "Welcome" badge
+const DotIcon = () => (
+    <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="4" cy="4" r="4" fill="currentColor"/>
+    </svg>
+);
 
-interface Project {
-  project_id: string;
-  project_name: string;
-  description: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  created_by: {
-    user_id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-  };
-  skills: string[];
-  images: string[];
-  videos: string[];
-  links: string[];
-}
 
-interface User {
-  user_id: string;
-  first_name: string;
-  last_name: string;
-}
 
-interface Skill {
-  skill_name: string;
-}
+// The data for the code snippet
+const coderData = {
+  name: 'Nazmul Hossain',
+  role: 'Frontend Developer',
+  seniority: 'Mid-Level',
+  location: 'Bangladesh',
+  skills: [
+    'React', 'Next.js', 'JavaScript', 'TypeScript',
+    'TailwindCSS', 'CSS', 'Figma', 'GitHub', 'HTML',
+    'Astro', 'Node.js', 'Express', 'MongoDB', 'Firebase',
+    'Git'
+  ],
+};
 
-export default function PortfolioPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedMember, setSelectedMember] = useState('');
-  const [selectedSkill, setSelectedSkill] = useState('');
-  const [allUsers, setAllUsers] = useState<User[]>([]);
-  const [allSkills, setAllSkills] = useState<Skill[]>([]);
+// The styled code window component
+const CoderProfileCard = () => {
+  return (
+    // Main container with gradient, border, and shadow - theme-aware
+    <div className="w-full mx-auto bg-gradient-to-r from-zinc-100 to-zinc-200 dark:from-[#000000] dark:to-[#0a0d37] border-zinc-300 dark:border-[#1b2c68a0] relative rounded-lg border shadow-lg">
 
-  // Use the actual backendUrl from environment variables
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+      {/* Top gradient border element */}
+      <div className="flex flex-row">
+        <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-pink-500 to-violet-600"></div>
+        <div className="h-[2px] w-full bg-gradient-to-r from-violet-600 to-transparent"></div>
+      </div>
 
-  useEffect(() => {
-    fetchProjects();
-    fetchUsersAndSkillsForFilters();
-  }, [searchTerm, selectedMember, selectedSkill]);
+      {/* Window Header */}
+      <div className="px-4 lg:px-8 py-5 flex justify-between items-center bg-zinc-200 dark:bg-[#000000]">
+        <div className="flex flex-row space-x-2">
+          <div className="h-3 w-3 rounded-full bg-red-500"></div>
+          <div className="h-3 w-3 rounded-full bg-orange-400"></div>
+          <div className="h-3 w-3 rounded-full bg-green-400"></div>
+        </div>
+        <div className="text-xs text-zinc-600 dark:text-gray-400 font-mono">coder.js</div>
+      </div>
 
-  const fetchProjects = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      let query = '';
-      if (selectedMember) query += `memberId=${selectedMember}&`;
-      if (selectedSkill) query += `skillName=${selectedSkill}&`;
-      if (searchTerm) query += `searchTerm=${encodeURIComponent(searchTerm)}&`;
+      {/* Code Content Area */}
+      <div className="overflow-hidden border-t-[2px] border-zinc-300 dark:border-indigo-900 px-4 lg:px-8 py-4 lg:py-8 relative">
+        {/* Background blur effects */}
+        <div className="absolute -top-24 -left-24 w-56 h-56 bg-blue-600 rounded-full opacity-10 filter blur-3xl"></div>
+        <div className="absolute -bottom-24 -right-24 w-56 h-56 bg-pink-600 rounded-full opacity-10 filter blur-3xl"></div>
 
-      const response = await fetch(`${backendUrl}/api/projects/portfolio?${query}`);
+        <div className="relative flex">
+          {/* Line Numbers */}
+          <div className="hidden md:flex flex-col items-end pr-4 text-zinc-600 dark:text-gray-500 font-mono text-xs">
+            {Array.from({ length: 12 }, (_, i) => (
+              <div key={i} className="leading-relaxed select-none opacity-70">{i + 1}</div>
+            ))}
+          </div>
 
-      if (response.ok) {
-        const data = await response.json();
-        setProjects(data);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to fetch projects');
-      }
-    } catch (err: any) {
-      setError('An unexpected error occurred: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+          {/* Code Snippet with theme-aware colors */}
+          <code className="font-mono text-xs md:text-sm lg:text-base w-full">
+            <div>
+              <span className="mr-2 text-pink-500 dark:text-pink-400">const</span>
+              <span className="mr-2 text-violet-500 dark:text-violet-400">coder</span>
+              <span className="mr-2 text-pink-500 dark:text-pink-400">=</span>
+              <span className="text-zinc-600 dark:text-gray-400">{'{'}</span>
+            </div>
+            <div className="pl-6">
+              <span className="text-zinc-800 dark:text-white">name:</span>
+              <span className="text-zinc-600 dark:text-gray-400">&#39;</span>
+              <span className="text-green-600 dark:text-green-400">{coderData.name}</span>
+              <span className="text-zinc-600 dark:text-gray-400">&#39;,</span>
+            </div>
+            <div className="pl-6">
+              <span className="text-zinc-800 dark:text-white">role:</span>
+              <span className="text-zinc-600 dark:text-gray-400">&#39;</span>
+              <span className="text-green-600 dark:text-green-400">{coderData.role}</span>
+              <span className="text-zinc-600 dark:text-gray-400">&#39;,</span>
+            </div>
+            <div className="pl-6">
+              <span className="text-zinc-800 dark:text-white">seniority:</span>
+              <span className="text-zinc-600 dark:text-gray-400">&#39;</span>
+              <span className="text-green-600 dark:text-green-400">{coderData.seniority}</span>
+              <span className="text-zinc-600 dark:text-gray-400">&#39;,</span>
+            </div>
+            <div className="pl-6">
+              <span className="text-zinc-800 dark:text-white">location:</span>
+              <span className="text-zinc-600 dark:text-gray-400">&#39;</span>
+              <span className="text-green-600 dark:text-green-400">{coderData.location}</span>
+              <span className="text-zinc-600 dark:text-gray-400">&#39;,</span>
+            </div>
+            <div className="pl-6">
+              <span className="text-zinc-800 dark:text-white">skills:</span>
+              <span className="text-zinc-600 dark:text-gray-400">{'['}</span>
+              <div className="pl-6 flex flex-wrap">
+                {coderData.skills.map((skill, index) => (
+                  <span key={skill} className="mr-1">
+                    <span className="text-zinc-600 dark:text-gray-400">&#39;</span>
+                    <span className="text-cyan-600 dark:text-cyan-400">{skill}</span>
+                    <span className="text-zinc-600 dark:text-gray-400">&#39;</span>
+                    {index < coderData.skills.length - 1 && <span className="text-zinc-600 dark:text-gray-400">, </span>}
+                  </span>
+                ))}
+              </div>
+              <span className="text-zinc-600 dark:text-gray-400">{'],'}</span>
+            </div>
+            <div>
+              <span className="text-zinc-600 dark:text-gray-400">{'};'}</span>
+            </div>
+          </code>
+        </div>
+      </div>
 
-  const fetchUsersAndSkillsForFilters = async () => {
-    try {
-      const token = Cookies.get('token');
-      const headers: HeadersInit = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const usersResponse = await fetch(`${backendUrl}/api/users`, { headers });
-      if (usersResponse.ok) {
-        const usersData = await usersResponse.json();
-        setAllUsers(usersData);
-      } else {
-        console.error('Failed to fetch users for filter:', await usersResponse.json());
-      }
-
-      const skillsResponse = await fetch(`${backendUrl}/api/skills`, { headers });
-      if (skillsResponse.ok) {
-        const skillsData = await skillsResponse.json();
-        setAllSkills(skillsData);
-      } else {
-        console.error('Failed to fetch skills for filter:', await skillsResponse.json());
-      }
-    } catch (err) {
-      console.error('Error fetching filter data:', err);
-    }
-  };
-
-  // Framer Motion variants for staggered animations
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.08,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1 },
-  };
-
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950 text-indigo-400 text-xl">
-      <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-500"></div>
-      <p className="ml-4">Loading portfolio...</p>
+      {/* Window Footer */}
+      <div className="px-4 lg:px-8 pb-4 mt-4 border-t border-zinc-300 dark:border-gray-800 pt-3 text-xs text-zinc-600 dark:text-gray-500 flex justify-between items-center">
+        <span>UTF-8</span>
+        <span>JavaScript</span>
+        <span>Ln 12, Col 2</span>
+      </div>
     </div>
   );
-  if (error) return <div className="min-h-screen flex items-center justify-center bg-gray-950 text-red-500 text-xl">{error}</div>;
+};
 
+// Main component
+const Portfolio = () => {
   return (
-    <main className="min-h-screen bg-gray-950 text-gray-100 font-inter relative overflow-hidden py-12">
-      {/* Global background grid pattern */}
-      <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
-        <div className="absolute inset-0 bg-grid-pattern animate-grid-pulse"></div>
+    <div className="min-h-screen w-full relative flex items-center justify-center font-sans p-4 sm:p-6 lg:p-8">
+      {/* Light mode Azure Depths */}
+      <div
+        className="absolute inset-0 z-0 dark:hidden"
+        style={{
+          background: "radial-gradient(125% 125% at 50% 100%, #ffffff 40%, #3b82f6 100%)",
+        }}
+      />
+
+      {/* Dark mode Azure Depths */}
+      <div
+        className="absolute inset-0 z-0 hidden dark:block"
+        style={{
+          background: "radial-gradient(125% 125% at 50% 100%, #000000 40%, #010133 100%)",
+        }}
+      />
+
+      {/* Main Content Container */}
+      <div className="container mx-auto max-w-7xl relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 xl:gap-16 items-center">
+
+          {/* Left Column: Text Content */}
+          <div className="flex flex-col gap-4 sm:gap-6 items-start text-left order-2 lg:order-1 animate-fade-in-up">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-gray-900/80 dark:bg-white/10 border border-gray-700 dark:border-gray-600 rounded-full text-xs sm:text-sm text-gray-200 dark:text-gray-300 backdrop-blur-sm hover:bg-gray-800 dark:hover:bg-white/20 transition-all duration-300">
+              <DotIcon />
+              Welcome to my universe
+            </div>
+
+            <div className="relative">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold leading-tight text-gray-900 dark:text-white">
+                    Hello <br />
+                    I&apos;m{' '}
+                    <span className="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+                        Nazmul Hossain
+                    </span>
+                </h1>
+            </div>
+
+            <div className="flex flex-wrap gap-2 sm:gap-3 my-2 sm:my-4">
+                <span className="px-3 sm:px-4 py-1 sm:py-2 bg-gray-900/80 dark:bg-white/10 border border-gray-700 dark:border-gray-600 rounded-full text-gray-200 dark:text-gray-300 text-sm sm:text-base backdrop-blur-sm hover:bg-gray-800 dark:hover:bg-white/20 transition-all duration-300 cursor-default">Learning MARN Stack</span>
+                <span className="px-3 sm:px-4 py-1 sm:py-2 bg-gray-900/80 dark:bg-white/10 border border-gray-700 dark:border-gray-600 rounded-full text-gray-200 dark:text-gray-300 text-sm sm:text-base backdrop-blur-sm hover:bg-gray-800 dark:hover:bg-white/20 transition-all duration-300 cursor-default">Clean Code</span>
+                <span className="px-3 sm:px-4 py-1 sm:py-2 bg-gray-900/80 dark:bg-white/10 border border-gray-700 dark:border-gray-600 rounded-full text-gray-200 dark:text-gray-300 text-sm sm:text-base backdrop-blur-sm hover:bg-gray-800 dark:hover:bg-white/20 transition-all duration-300 cursor-default">Innovation</span>
+            </div>
+
+            <p className="text-gray-600 dark:text-gray-300 text-base sm:text-lg lg:text-xl max-w-lg leading-relaxed">
+              JavaScript lover 🖋️ | Olovals creator ⚡ | Crafting frameworks and coding the future ✨
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-4 sm:mt-6 w-full sm:w-auto">
+              <button className="px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">
+                Learn More
+              </button>
+              <button className="px-6 py-3 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg font-semibold transition-all duration-300 hover:scale-105 active:scale-95">
+                Get Resume
+              </button>
+            </div>
+          </div>
+
+          {/* Right Column: Code Editor */}
+          <div className="order-1 lg:order-2 animate-fade-in-up">
+            <CoderProfileCard />
+          </div>
+
+        </div>
       </div>
-
-      <div className="max-w-7xl mx-auto px-4 relative z-10">
-        <header className="text-center mb-16">
-          <motion.h1
-            initial={{ opacity: 0, y: -30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600 mb-4 drop-shadow-lg leading-tight"
-          >
-            Our Innovation Showcase
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
-            className="text-lg md:text-xl text-gray-300 mt-2 max-w-2xl mx-auto font-light"
-          >
-            Dive into a collection of pioneering projects crafted by our visionary team.
-          </motion.p>
-        </header>
-
-        {/* Filters */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          variants={containerVariants}
-          className="flex flex-col md:flex-row gap-4 mb-12 p-6 bg-gray-900 rounded-xl shadow-2xl border border-gray-800"
-        >
-          <motion.input
-            variants={itemVariants}
-            type="text"
-            placeholder="Search projects by name or description..."
-            className="flex-grow p-3 bg-gray-800 border border-gray-700 rounded-md text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-200"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <motion.select
-            variants={itemVariants}
-            className="p-3 bg-gray-800 border border-gray-700 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-200"
-            value={selectedMember}
-            onChange={(e) => setSelectedMember(e.target.value)}
-          >
-            <option value="" className="bg-gray-800 text-gray-300">All Members</option>
-            {allUsers.map((user) => (
-              <option key={user.user_id} value={user.user_id} className="bg-gray-800 text-gray-300">
-                {user.first_name} {user.last_name}
-              </option>
-            ))}
-          </motion.select>
-          <motion.select
-            variants={itemVariants}
-            className="p-3 bg-gray-800 border border-gray-700 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-200"
-            value={selectedSkill}
-            onChange={(e) => setSelectedSkill(e.target.value)}
-          >
-            <option value="" className="bg-gray-800 text-gray-300">All Skills</option>
-            {allSkills.map((skill) => (
-              <option key={skill.skill_name} value={skill.skill_name} className="bg-gray-800 text-gray-300">
-                {skill.skill_name}
-              </option>
-            ))}
-          </motion.select>
-          <motion.button
-            variants={itemVariants}
-            onClick={() => { setSearchTerm(''); setSelectedMember(''); setSelectedSkill(''); }}
-            className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-md shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50"
-          >
-            Clear Filters
-          </motion.button>
-        </motion.div>
-
-        {projects.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center text-gray-500 text-xl mt-16 p-8 bg-gray-900 rounded-xl shadow-lg border border-gray-800"
-          >
-            <p>No projects match your current filter criteria. Try adjusting your selections!</p>
-          </motion.div>
-        ) : (
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={containerVariants}
-          >
-            {projects.map((project) => (
-              <motion.div
-                key={project.project_id}
-                variants={itemVariants}
-                className="bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-700 transform transition duration-300 hover:scale-[1.02] hover:shadow-purple-500/30 group"
-              >
-                {project.images && project.images.length > 0 && (
-                  <div className="relative w-full h-64 bg-gray-700 overflow-hidden">
-                    <Image
-                      src={`${backendUrl}${project.images[0]}`} // Use backendUrl for image paths
-                      alt={project.project_name}
-                      layout="fill"
-                      objectFit="cover"
-                      className="transition-transform duration-500 group-hover:scale-110"
-                      // Fallback for image loading errors
-                      onError={(e) => {
-                        e.currentTarget.src = `https://placehold.co/600x400/333333/FFFFFF?text=Project+Image`;
-                        e.currentTarget.onerror = null; // Prevents infinite loop if fallback also fails
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900/70 to-transparent"></div>
-                  </div>
-                )}
-                <div className="p-7">
-                  <h2 className="text-2xl font-bold mb-3 text-white group-hover:text-cyan-400 transition-colors duration-300">{project.project_name}</h2>
-                  <p className="text-gray-400 text-base mb-5 line-clamp-3">{project.description}</p>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {project.skills.map((skill, index) => (
-                      <span key={index} className="bg-indigo-700 text-indigo-200 text-xs font-semibold px-3 py-1 rounded-full border border-indigo-600">
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                  <p className="text-gray-500 text-sm italic">By: {project.created_by.first_name} {project.created_by.last_name}</p>
-                  <div className="mt-6 flex justify-end">
-                    <Link href={`/projects/${project.project_id}`} className="inline-flex items-center text-indigo-400 hover:text-indigo-300 font-semibold transition-colors duration-300 group-hover:underline">
-                      Learn More
-                      <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                    </Link>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
-      </div>
-
-      {/* Global Styles for custom animations */}
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-
-        body {
-          font-family: 'Inter', sans-serif;
-        }
-
-        /* Hero Section Gradient Animation - Reused for general background effect */
-        @keyframes gradient-x {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-
-        .animate-gradient-x {
-          background-size: 200% 200%;
-          animation: gradient-x 15s ease infinite;
-        }
-
-        /* Background Grid Pattern */
-        .bg-grid-pattern {
-          background-image: linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
-                            linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);
-          background-size: 40px 40px;
-        }
-
-        @keyframes grid-pulse {
-          0% { opacity: 0.05; }
-          50% { opacity: 0.15; }
-          100% { opacity: 0.05; }
-        }
-
-        .animate-grid-pulse {
-          animation: grid-pulse 20s infinite ease-in-out;
-        }
-
-        /* Pulse Light for Hero - Reused for general background effect */
-        .bg-radial-gradient {
-          background: radial-gradient(circle at center, rgba(100, 200, 255, 0.2), transparent 70%);
-        }
-
-        @keyframes pulse-light {
-          0% { transform: scale(0.8); opacity: 0.2; }
-          50% { transform: scale(1.2); opacity: 0.4; }
-          100% { transform: scale(0.8); opacity: 0.2; }
-        }
-
-        .animate-pulse-light {
-          animation: pulse-light 10s infinite ease-in-out;
-        }
-
-        /* Number pulse animation for overview section - Not directly used here but kept for consistency if needed */
-        @keyframes pulse-number {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.03); }
-        }
-
-        .animate-pulse-number {
-          animation: pulse-number 2s ease-in-out infinite;
-        }
-      `}</style>
-    </main>
+    </div>
   );
+};
+
+export default Portfolio;
+
+// Add custom CSS for animations
+const styles = `
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.6s ease-out forwards;
+  }
+
+  .hover\\:shadow-3xl:hover {
+    box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25);
+  }
+`;
+
+// Inject styles
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = styles;
+  document.head.appendChild(styleSheet);
 }

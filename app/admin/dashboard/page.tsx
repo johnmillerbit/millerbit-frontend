@@ -56,7 +56,7 @@ export default function AdminDashboardPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-800 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 text-white"> {/* Updated background */}
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <h1 className="text-4xl font-extrabold mb-8 text-center text-white drop-shadow-lg">
           Admin Dashboard
@@ -64,38 +64,38 @@ export default function AdminDashboardPage() {
 
         {loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="bg-slate-800/80 border-slate-700 text-white shadow-lg backdrop-blur-sm">
+            <Card className="bg-white/5 border-white/10 text-white shadow-lg backdrop-blur-sm"> {/* Updated card background and border */}
               <CardHeader>
-                <Skeleton className="h-4 w-1/2 bg-slate-700" />
+                <Skeleton className="h-4 w-1/2 bg-white/10" /> {/* Updated Skeleton color */}
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-8 w-3/4 mb-2 bg-slate-600" />
-                <Skeleton className="h-3 w-2/3 bg-slate-700" />
+                <Skeleton className="h-8 w-3/4 mb-2 bg-white/5" /> {/* Updated Skeleton color */}
+                <Skeleton className="h-3 w-2/3 bg-white/10" /> {/* Updated Skeleton color */}
               </CardContent>
             </Card>
-            <Card className="bg-slate-800/80 border-slate-700 text-white shadow-lg backdrop-blur-sm">
+            <Card className="bg-white/5 border-white/10 text-white shadow-lg backdrop-blur-sm"> {/* Updated card background and border */}
               <CardHeader>
-                <Skeleton className="h-4 w-1/2 bg-slate-700" />
+                <Skeleton className="h-4 w-1/2 bg-white/10" /> {/* Updated Skeleton color */}
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-8 w-3/4 mb-2 bg-slate-600" />
-                <Skeleton className="h-3 w-2/3 bg-slate-700" />
+                <Skeleton className="h-8 w-3/4 mb-2 bg-white/5" /> {/* Updated Skeleton color */}
+                <Skeleton className="h-3 w-2/3 bg-white/10" /> {/* Updated Skeleton color */}
               </CardContent>
             </Card>
-            <Card className="bg-slate-800/80 border-slate-700 text-white shadow-lg backdrop-blur-sm">
+            <Card className="bg-white/5 border-white/10 text-white shadow-lg backdrop-blur-sm"> {/* Updated card background and border */}
               <CardHeader>
-                <Skeleton className="h-4 w-1/2 bg-slate-700" />
+                <Skeleton className="h-4 w-1/2 bg-white/10" /> {/* Updated Skeleton color */}
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-8 w-3/4 mb-2 bg-slate-600" />
-                <Skeleton className="h-3 w-2/3 bg-slate-700" />
+                <Skeleton className="h-8 w-3/4 mb-2 bg-white/5" /> {/* Updated Skeleton color */}
+                <Skeleton className="h-3 w-2/3 bg-white/10" /> {/* Updated Skeleton color */}
               </CardContent>
             </Card>
           </div>
         )}
 
         {error && (
-          <Alert variant="destructive" className="mb-6 bg-red-900/50 border-red-700 text-red-200">
+          <Alert variant="destructive" className="mb-6 bg-red-900/20 border-red-500/30 text-red-200 backdrop-blur-xl"> {/* Updated alert style */}
             <AlertTriangle className="h-4 w-4 text-red-300" />
             <AlertTitle className="text-red-100">Error</AlertTitle>
             <AlertDescription className="text-red-200">{error}</AlertDescription>
@@ -104,40 +104,40 @@ export default function AdminDashboardPage() {
 
         {!loading && !error && dashboardData && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="bg-slate-800/80 border-slate-700 text-white shadow-lg backdrop-blur-sm">
+            <Card className="bg-white/5 border-white/10 text-white shadow-lg backdrop-blur-sm"> {/* Updated card background and border */}
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-slate-300">Member Count</CardTitle>
-                <User className="h-4 w-4 text-slate-400" />
+                <CardTitle className="text-sm font-medium text-slate-300">Member Count</CardTitle> {/* Maintained text color */}
+                <User className="h-4 w-4 text-slate-400" /> {/* Maintained text color */}
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-white">{dashboardData.memberCount}</div>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-400"> {/* Maintained text color */}
                   Total registered members
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-slate-800/80 border-slate-700 text-white shadow-lg backdrop-blur-sm">
+            <Card className="bg-white/5 border-white/10 text-white shadow-lg backdrop-blur-sm"> {/* Updated card background and border */}
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-slate-300">Total Projects</CardTitle>
-                <Package className="h-4 w-4 text-slate-400" />
+                <CardTitle className="text-sm font-medium text-slate-300">Total Projects</CardTitle> {/* Maintained text color */}
+                <Package className="h-4 w-4 text-slate-400" /> {/* Maintained text color */}
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-white">{dashboardData.totalProjects}</div>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-400"> {/* Maintained text color */}
                   All projects in the system
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-slate-800/80 border-slate-700 text-white shadow-lg backdrop-blur-sm">
+            <Card className="bg-white/5 border-white/10 text-white shadow-lg backdrop-blur-sm"> {/* Updated card background and border */}
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-slate-300">Pending Projects</CardTitle>
-                <Hourglass className="h-4 w-4 text-slate-400" />
+                <CardTitle className="text-sm font-medium text-slate-300">Pending Projects</CardTitle> {/* Maintained text color */}
+                <Hourglass className="h-4 w-4 text-slate-400" /> {/* Maintained text color */}
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-white">{dashboardData.pendingProjects}</div>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-400"> {/* Maintained text color */}
                   Projects awaiting approval
                 </p>
               </CardContent>
