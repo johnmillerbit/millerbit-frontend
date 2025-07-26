@@ -1,195 +1,556 @@
-"use client";
+"use client"
+import React, { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "../components/ui/badge"
+import { Github, Linkedin, Mail, Code, Database, Smartphone, Globe, Users, Award, Zap, LucideIcon } from "lucide-react"
+import Link from "next/link"
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { motion } from 'framer-motion'; // For animations
+// Type definitions
+interface Stat {
+  value: string
+  label: string
+}
 
-interface OverviewData {
-  memberCount: number;
-  totalProjects: number;
+interface Service {
+  icon: LucideIcon
+  title: string
+  description: string
+  gradient: string
 }
 
 interface Project {
   project_id: string;
   project_name: string;
   description: string;
-  images: string[];
+  status: string;
+  created_at: string;
+  updated_at: string;
   created_by: {
+    user_id: string;
     first_name: string;
     last_name: string;
+    email: string;
   };
+  skills: string[];
+  images: string[];
+  videos: string[];
+  links: string[];
+  // Frontend specific fields for display
+  title: string; // Mapped from project_name
+  category: string; // Derived or default
+  gradient: string; // Derived or default
+  categoryColor: string; // Derived or default
+  technologies: string[]; // Mapped from skills
+  image: string; // Mapped from first image URL
 }
 
-export default function LandingPage() {
-  const [overviewData, setOverviewData] = useState<OverviewData | null>(null);
-  const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+interface TeamMember {
+  name: string
+  role: string
+  image: string
+}
 
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+interface TechStack {
+  name: string
+  color: string
+}
+
+interface LogoProps {
+  className?: string
+}
+
+interface ServiceCardProps {
+  service: Service
+}
+
+interface ProjectCardProps {
+  project: Project
+}
+
+interface TeamMemberCardProps {
+  member: TeamMember
+}
+
+// Data constants
+const STATS: Stat[] = [
+  { value: "50+", label: "Projects Completed" },
+  { value: "25+", label: "Happy Clients" },
+  { value: "5+", label: "Years Experience" },
+  { value: "24/7", label: "Support" }
+]
+
+const SERVICES: Service[] = [
+  {
+    icon: Globe,
+    title: "Web Development",
+    description: "Modern, responsive websites and web applications built with cutting-edge technologies",
+    gradient: "from-blue-500 to-cyan-500"
+  },
+  {
+    icon: Zap,
+    title: "AI Solutions",
+    description: "Intelligent automation and AI-powered applications to streamline your business processes",
+    gradient: "from-purple-500 to-pink-500"
+  },
+  {
+    icon: Smartphone,
+    title: "Mobile Apps",
+    description: "Native and cross-platform mobile applications for iOS and Android",
+    gradient: "from-green-500 to-emerald-500"
+  },
+  {
+    icon: Database,
+    title: "Database Solutions",
+    description: "Scalable database architecture and data management solutions",
+    gradient: "from-orange-500 to-red-500"
+  },
+  {
+    icon: Users,
+    title: "Consulting",
+    description: "Strategic technology consulting to help you make informed decisions",
+    gradient: "from-indigo-500 to-purple-500"
+  },
+  {
+    icon: Award,
+    title: "Quality Assurance",
+    description: "Comprehensive testing and quality assurance for all our deliverables",
+    gradient: "from-yellow-500 to-orange-500"
+  }
+]
+
+
+const TEAM_MEMBERS: TeamMember[] = [
+  { name: "Alex Miller", role: "Lead Developer", image: "/placeholder.svg?height=300&width=300" },
+  { name: "Sarah Chen", role: "UI/UX Designer", image: "/placeholder.svg?height=300&width=300" },
+  { name: "Mike Johnson", role: "AI Specialist", image: "/placeholder.svg?height=300&width=300" }
+]
+
+const TECH_STACK: TechStack[] = [
+  { name: "React", color: "bg-purple-500/20 text-purple-300" },
+  { name: "Next.js", color: "bg-blue-500/20 text-blue-300" },
+  { name: "Node.js", color: "bg-green-500/20 text-green-300" },
+  { name: "Python", color: "bg-yellow-500/20 text-yellow-300" },
+  { name: "AI/ML", color: "bg-red-500/20 text-red-300" },
+  { name: "Cloud", color: "bg-indigo-500/20 text-indigo-300" }
+]
+
+const FEATURED_PROJECT_TECHNOLOGIES: string[] = ["React", "Node.js", "Python", "TensorFlow"]
+
+const SOCIAL_ICONS: LucideIcon[] = [Github, Linkedin, Mail]
+
+const NAV_ITEMS: string[] = ["About", "Services", "Projects", "Team", "Contact"]
+
+// Components
+const Logo: React.FC<LogoProps> = ({ className = "" }) => (
+  <div className={`flex items-center space-x-2 ${className}`}>
+    <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-lg flex items-center justify-center">
+      <Code className="w-5 h-5 text-white" />
+    </div>
+    <span className="text-2xl font-bold text-white">MillerBit</span>
+  </div>
+)
+
+const Navigation: React.FC = () => (
+  <nav className="flex items-center justify-between">
+    <Logo />
+    <div className="hidden md:flex space-x-8">
+      {NAV_ITEMS.map((item: string) => (
+        <Link 
+          key={item} 
+          href={`#${item.toLowerCase()}`} 
+          className="text-gray-300 hover:text-white transition-colors"
+        >
+          {item}
+        </Link>
+      ))}
+    </div>
+  </nav>
+)
+
+const HeroSection: React.FC = () => (
+  <section className="container mx-auto px-4 py-20 text-center">
+    <div className="max-w-4xl mx-auto">
+      <Badge className="mb-4 bg-purple-500/20 text-purple-300 border-purple-500/30">
+        Innovation • Technology • Excellence
+      </Badge>
+      <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+        Building the
+        <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"> Future </span>
+        of Technology
+      </h1>
+      <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+        MillerBit is a cutting-edge technology team specializing in AI solutions, web development, and innovative
+        digital experiences that transform businesses.
+      </p>
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <Button
+          size="lg"
+          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3"
+        >
+          Get Started
+        </Button>
+        <Button
+          size="lg"
+          variant="outline"
+          className="border-gray-600 text-gray-300 hover:bg-gray-800 px-8 py-3 bg-transparent"
+        >
+          View Our Work
+        </Button>
+      </div>
+    </div>
+  </section>
+)
+
+const StatsSection: React.FC = () => (
+  <section className="container mx-auto px-4 py-16">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      {STATS.map((stat: Stat, index: number) => (
+        <div key={index}>
+          <div className="text-3xl font-bold text-white mb-2">{stat.value}</div>
+          <div className="text-gray-400">{stat.label}</div>
+        </div>
+      ))}
+    </div>
+  </section>
+)
+
+const ServiceCard: React.FC<ServiceCardProps> = ({ service }) => {
+  const IconComponent = service.icon
+  return (
+    <Card className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors">
+      <CardHeader>
+        <div className={`w-12 h-12 bg-gradient-to-r ${service.gradient} rounded-lg flex items-center justify-center mb-4`}>
+          <IconComponent className="w-6 h-6 text-white" />
+        </div>
+        <CardTitle className="text-white">{service.title}</CardTitle>
+        <CardDescription className="text-gray-400">
+          {service.description}
+        </CardDescription>
+      </CardHeader>
+    </Card>
+  )
+}
+
+const ServicesSection: React.FC = () => (
+  <section id="services" className="container mx-auto px-4 py-20">
+    <div className="text-center mb-16">
+      <h2 className="text-4xl font-bold text-white mb-4">Our Services</h2>
+      <p className="text-gray-300 max-w-2xl mx-auto">
+        We offer comprehensive technology solutions tailored to meet your business needs
+      </p>
+    </div>
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {SERVICES.map((service: Service, index: number) => (
+        <ServiceCard key={index} service={service} />
+      ))}
+    </div>
+  </section>
+)
+
+const FeaturedProject: React.FC = () => (
+  <div className="lg:col-span-2">
+    <Card className="bg-gray-800/50 border-gray-700 overflow-hidden">
+      <div className="md:flex">
+        <div className="md:w-1/2">
+          <div className="h-64 md:h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+            <img
+              src="/placeholder.svg?height=400&width=600"
+              alt="BitAI Platform"
+              className="w-full h-full object-cover opacity-80"
+            />
+          </div>
+        </div>
+        <div className="md:w-1/2 p-8">
+          <div className="flex items-center gap-2 mb-4">
+            <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">Featured Project</Badge>
+            <Badge variant="outline" className="border-blue-500/30 text-blue-300">
+              AI Platform
+            </Badge>
+          </div>
+          <h3 className="text-2xl font-bold text-white mb-4">BitAI - Intelligent Automation Platform</h3>
+          <p className="text-gray-300 mb-6">
+            A comprehensive AI-powered platform that helps businesses automate complex tasks and streamline
+            operations. Features include natural language processing, predictive analytics, and seamless
+            integration capabilities.
+          </p>
+          <div className="flex flex-wrap gap-2 mb-6">
+            {FEATURED_PROJECT_TECHNOLOGIES.map((tech: string) => (
+              <Badge key={tech} variant="secondary" className="bg-blue-500/20 text-blue-300">
+                {tech}
+              </Badge>
+            ))}
+          </div>
+          <div className="flex gap-4">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-gray-600 text-gray-300 hover:bg-gray-800 bg-transparent"
+            >
+              <Globe className="w-4 h-4 mr-2" />
+              Live Demo
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-gray-600 text-gray-300 hover:bg-gray-800 bg-transparent"
+            >
+              <Github className="w-4 h-4 mr-2" />
+              View Code
+            </Button>
+          </div>
+        </div>
+      </div>
+    </Card>
+  </div>
+)
+
+const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => (
+  <Card className="bg-gray-800/50 border-gray-700 overflow-hidden group hover:bg-gray-800/70 transition-all duration-300">
+    <div className={`h-48 bg-gradient-to-br ${project.gradient} flex items-center justify-center overflow-hidden`}>
+      <img
+        src={project.image}
+        alt={project.title}
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+      />
+    </div>
+    <CardHeader>
+      <div className="flex items-center justify-between mb-2">
+        <Badge variant="outline" className={project.categoryColor}>
+          {project.category}
+        </Badge>
+        <div className="flex gap-2">
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-400 hover:text-white">
+            <Globe className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-400 hover:text-white">
+            <Github className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+      <CardTitle className="text-white text-lg">{project.title}</CardTitle>
+      <CardDescription className="text-gray-400">
+        {project.description}
+      </CardDescription>
+    </CardHeader>
+    <CardContent>
+      <div className="flex flex-wrap gap-1">
+        {project.technologies.map((tech: string) => (
+          <Badge key={tech} variant="secondary" className="bg-blue-500/20 text-blue-300 text-xs">
+            {tech}
+          </Badge>
+        ))}
+      </div>
+    </CardContent>
+  </Card>
+)
+
+const ProjectsSection: React.FC<{ projects: Project[]; loading: boolean; error: string | null }> = ({ projects, loading, error }) => (
+  <section id="projects" className="container mx-auto px-4 py-20">
+    <div className="text-center mb-16">
+      <h2 className="text-4xl font-bold text-white mb-4">Our Recent Projects</h2>
+      <p className="text-gray-300 max-w-2xl mx-auto">
+        Explore some of our latest work and see how we've helped businesses transform their digital presence
+      </p>
+    </div>
+
+    <div className="grid lg:grid-cols-2 gap-12 mb-16">
+      <FeaturedProject />
+    </div>
+
+    {loading && <p className="text-center text-gray-300">Loading projects...</p>}
+    {error && <p className="text-center text-red-500">Error loading projects: {error}</p>}
+    {!loading && !error && projects.length === 0 && (
+      <p className="text-center text-gray-300">No projects found.</p>
+    )}
+
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {!loading && !error && projects.map((project: Project) => (
+        <ProjectCard key={project.project_id} project={project} />
+      ))}
+    </div>
+
+    <div className="text-center mt-12">
+      <Button
+        size="lg"
+        variant="outline"
+        className="border-gray-600 text-gray-300 hover:bg-gray-800 px-8 py-3 bg-transparent"
+      >
+        View All Projects
+        <Globe className="w-5 h-5 ml-2" />
+      </Button>
+    </div>
+  </section>
+)
+
+const AboutSection: React.FC = () => (
+  <section id="about" className="container mx-auto px-4 py-20">
+    <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <div>
+        <h2 className="text-4xl font-bold text-white mb-6">About MillerBit</h2>
+        <p className="text-gray-300 mb-6 text-lg">
+          We are a passionate team of developers, designers, and technology enthusiasts dedicated to creating
+          innovative solutions that drive business growth and digital transformation.
+        </p>
+        <p className="text-gray-300 mb-8">
+          Our expertise spans across multiple technologies and industries, allowing us to deliver comprehensive
+          solutions that meet the unique needs of each client.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          {TECH_STACK.map((tech: TechStack) => (
+            <Badge key={tech.name} variant="secondary" className={tech.color}>
+              {tech.name}
+            </Badge>
+          ))}
+        </div>
+      </div>
+      <div className="relative">
+        <div className="w-full h-96 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl flex items-center justify-center">
+          <Code className="w-24 h-24 text-purple-400" />
+        </div>
+      </div>
+    </div>
+  </section>
+)
+
+const TeamMemberCard: React.FC<TeamMemberCardProps> = ({ member }) => (
+  <Card className="bg-gray-800/50 border-gray-700 text-center">
+    <CardHeader>
+      <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center">
+        <Users className="w-12 h-12 text-white" />
+      </div>
+      <CardTitle className="text-white">{member.name}</CardTitle>
+      <CardDescription className="text-gray-400">{member.role}</CardDescription>
+    </CardHeader>
+    <CardContent>
+      <div className="flex justify-center space-x-4">
+        {SOCIAL_ICONS.map((Icon: LucideIcon, iconIndex: number) => (
+          <Link key={iconIndex} href="#" className="text-gray-400 hover:text-white transition-colors">
+            <Icon className="w-5 h-5" />
+          </Link>
+        ))}
+      </div>
+    </CardContent>
+  </Card>
+)
+
+const TeamSection: React.FC = () => (
+  <section id="team" className="container mx-auto px-4 py-20">
+    <div className="text-center mb-16">
+      <h2 className="text-4xl font-bold text-white mb-4">Meet Our Team</h2>
+      <p className="text-gray-300 max-w-2xl mx-auto">
+        Talented individuals working together to create exceptional digital experiences
+      </p>
+    </div>
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {TEAM_MEMBERS.map((member: TeamMember, index: number) => (
+        <TeamMemberCard key={index} member={member} />
+      ))}
+    </div>
+  </section>
+)
+
+const ContactSection: React.FC = () => (
+  <section id="contact" className="container mx-auto px-4 py-20">
+    <div className="max-w-2xl mx-auto text-center">
+      <h2 className="text-4xl font-bold text-white mb-6">Get In Touch</h2>
+      <p className="text-gray-300 mb-8">
+        Ready to start your next project? Let's discuss how we can help bring your ideas to life.
+      </p>
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <Button
+          size="lg"
+          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3"
+        >
+          <Mail className="w-5 h-5 mr-2" />
+          Contact Us
+        </Button>
+        <Button
+          size="lg"
+          variant="outline"
+          className="border-gray-600 text-gray-300 hover:bg-gray-800 px-8 py-3 bg-transparent"
+        >
+          <Github className="w-5 h-5 mr-2" />
+          View GitHub
+        </Button>
+      </div>
+    </div>
+  </section>
+)
+
+const Footer: React.FC = () => (
+  <footer className="border-t border-gray-800 py-12">
+    <div className="container mx-auto px-4">
+      <div className="flex flex-col md:flex-row justify-between items-center">
+        <Logo className="mb-4 md:mb-0" />
+        <p className="text-gray-400 text-center md:text-right">© 2024 MillerBit Team. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+)
+
+// Main Component
+const MillerBitLanding: React.FC = () => {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError('');
+    const fetchProjects = async () => {
       try {
-        // Fetch overview data
-        const overviewResponse = await fetch(`${backendUrl}/api/dashboard/overview`);
-        if (overviewResponse.ok) {
-          const data = await overviewResponse.json();
-          setOverviewData(data);
-        } else {
-          console.error('Failed to fetch overview data:', await overviewResponse.json());
+        const response = await fetch('http://localhost:5000/api/projects/portfolio'); // Use the backend URL
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-
-        // Fetch featured projects (e.g., first 3 approved projects)
-        const projectsResponse = await fetch(`${backendUrl}/api/projects/portfolio`);
-        if (projectsResponse.ok) {
-          const data = await projectsResponse.json();
-          setFeaturedProjects(data.slice(0, 3)); // Take first 3 as featured
-        } else {
-          console.error('Failed to fetch featured projects:', await projectsResponse.json());
-        }
-
-      } catch (err: any) {
-        setError('An unexpected error occurred: ' + err.message);
+        const data = await response.json();
+        // Map backend data to frontend Project interface
+        const mappedProjects: Project[] = data.map((p: any) => ({
+          project_id: p.project_id,
+          project_name: p.project_name,
+          description: p.description,
+          status: p.status,
+          created_at: p.created_at,
+          updated_at: p.updated_at,
+          created_by: p.created_by,
+          skills: p.skills,
+          images: p.images,
+          videos: p.videos,
+          links: p.links,
+          // Frontend specific fields
+          title: p.project_name,
+          category: p.skills.length > 0 ? p.skills[0] : "General", // Use first skill as category or default
+          gradient: "from-blue-500/20 to-purple-500/20", // Default gradient
+          categoryColor: "border-blue-500/30 text-blue-300", // Default color
+          technologies: p.skills,
+          image: p.images.length > 0 ? p.images[0] : "/placeholder.svg?height=300&width=400", // Use first image or placeholder
+        }));
+        setProjects(mappedProjects);
+      } catch (e: any) {
+        setError(e.message);
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
+
+    fetchProjects();
   }, []);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1 },
-  };
-
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading landing page...</div>;
-  if (error) return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>;
-
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 text-gray-800">
-      {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center text-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          {/* Background animation or image */}
-          <div className="absolute inset-0 bg-cover bg-center animate-pulse-bg" style={{ backgroundImage: 'url(/next.svg)' }}></div>
-          <div className="absolute inset-0 bg-black opacity-20"></div>
-        </div>
-        <motion.div
-          className="z-10 p-8 bg-white bg-opacity-80 rounded-lg shadow-xl backdrop-blur-sm"
-          initial={{ opacity: 0, y: -50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <h1 className="text-5xl font-extrabold text-indigo-800 mb-4">
-            Welcome to Our Team Portfolio
-          </h1>
-          <p className="text-xl text-gray-700 mb-6 max-w-2xl mx-auto">
-            Showcasing innovative projects and the talented individuals behind them.
-          </p>
-          <Link href="/portfolio" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300 ease-in-out transform hover:scale-105">
-            Explore Projects
-          </Link>
-        </motion.div>
-      </section>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <header className="container mx-auto px-4 py-6">
+        <Navigation />
+      </header>
 
-      {/* Overview Section */}
-      {overviewData && (
-        <section className="py-20 bg-white text-center">
-          <motion.div
-            className="max-w-4xl mx-auto px-4"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.5 }}
-            variants={containerVariants}
-          >
-            <motion.h2 variants={itemVariants} className="text-4xl font-bold text-gray-800 mb-10">
-              Our Impact
-            </motion.h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <motion.div variants={itemVariants} className="bg-blue-50 p-8 rounded-lg shadow-md">
-                <h3 className="text-5xl font-extrabold text-blue-600">{overviewData.memberCount}</h3>
-                <p className="text-xl text-gray-700 mt-2">Talented Members</p>
-              </motion.div>
-              <motion.div variants={itemVariants} className="bg-green-50 p-8 rounded-lg shadow-md">
-                <h3 className="text-5xl font-extrabold text-green-600">{overviewData.totalProjects}</h3>
-                <p className="text-xl text-gray-700 mt-2">Completed Projects</p>
-              </motion.div>
-            </div>
-          </motion.div>
-        </section>
-      )}
-
-      {/* Featured Projects Section */}
-      {featuredProjects.length > 0 && (
-        <section className="py-20 bg-gray-100">
-          <motion.div
-            className="max-w-7xl mx-auto px-4"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.5 }}
-            variants={containerVariants}
-          >
-            <motion.h2 variants={itemVariants} className="text-4xl font-bold text-center text-gray-800 mb-12">
-              Featured Projects
-            </motion.h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {featuredProjects.map((project) => (
-                <motion.div
-                  key={project.project_id}
-                  variants={itemVariants}
-                  className="bg-white rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:scale-105"
-                >
-                  {project.images && project.images.length > 0 && (
-                    <div className="relative w-full h-48 bg-gray-200">
-                      <Image
-                        src={`${backendUrl}${project.images[0]}`}
-                        alt={project.project_name}
-                        layout="fill"
-                        objectFit="cover"
-                        className="w-full h-full"
-                      />
-                    </div>
-                  )}
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold mb-2 text-indigo-700">{project.project_name}</h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">{project.description}</p>
-                    <p className="text-gray-500 text-xs">By: {project.created_by.first_name} {project.created_by.last_name}</p>
-                    <div className="mt-4 flex justify-end">
-                      <Link href={`/projects/${project.project_id}`} className="text-blue-600 hover:underline">
-                        View Details
-                      </Link>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-            <motion.div variants={itemVariants} className="text-center mt-12">
-              <Link href="/portfolio" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300 ease-in-out transform hover:scale-105">
-                View All Projects
-              </Link>
-            </motion.div>
-          </motion.div>
-        </section>
-      )}
-
-      {/* Footer */}
-      <footer className="py-8 text-center text-gray-600 text-sm">
-        <p>&copy; {new Date().getFullYear()} Your Team Name. All rights reserved.</p>
-      </footer>
-    </main>
-  );
+      <HeroSection />
+      <StatsSection />
+      <ServicesSection />
+      <ProjectsSection projects={projects} loading={loading} error={error} />
+      <AboutSection />
+      <TeamSection />
+      <ContactSection />
+      <Footer />
+    </div>
+  )
 }
+
+export default MillerBitLanding
