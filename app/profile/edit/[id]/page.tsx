@@ -680,6 +680,38 @@ export default function EditMemberProfilePage() {
                   )}
                 </div>
 
+                {/* Account Management Section */}
+                <Card className="bg-white/5 backdrop-blur-xl border-white/10 text-white hover:bg-white/10 transition-all duration-500 rounded-2xl overflow-hidden">
+                  <CardHeader className="border-b border-white/10">
+                    <CardTitle className="text-2xl font-bold flex items-center gap-3">
+                      <div className="p-2 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg">
+                        <Mail className="h-5 w-5" /> {/* Using Mail icon for password reset */}
+                      </div>
+                      Account Management
+                    </CardTitle>
+                    <CardDescription className="text-slate-400">
+                      Manage your account settings, including password reset.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-8">
+                    <div className="space-y-4">
+                      <Label htmlFor="reset_password" className="text-slate-300 flex items-center gap-2 font-medium">
+                        Reset Password
+                      </Label>
+                      <p className="text-slate-400 text-sm">
+                        Click the button below to initiate a password reset process. You will receive an email with instructions.
+                      </p>
+                      <Button
+                        type="button"
+                        onClick={() => router.push('/auth/forgot-password')}
+                        className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white border-0 px-8 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105"
+                      >
+                        Reset Password
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-white/10">
                   <Button

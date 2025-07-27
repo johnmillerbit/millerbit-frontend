@@ -6,6 +6,27 @@ import Cookies from 'js-cookie';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { 
+  ArrowLeft, 
+  Users, 
+  Calendar, 
+  User, 
+  Code2, 
+  Camera, 
+  Video, 
+  ExternalLink, 
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  Sparkles,
+  Play,
+  Image as ImageIcon
+} from "lucide-react";
 
 interface Project {
   project_id: string;
@@ -52,18 +73,7 @@ export default function ProjectDetailPage() {
     setLoading(true);
     setError('');
     try {
-      const token = Cookies.get('token');
-      if (!token) {
-        setError('Authentication token not found. Please log in.');
-        setLoading(false);
-        return;
-      }
-
-      const response = await fetch(`${backendUrl}/api/projects/${projectId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(`${backendUrl}/api/projects/public/${projectId}`);
 
       if (response.ok) {
         const data = await response.json();
@@ -79,216 +89,448 @@ export default function ProjectDetailPage() {
     }
   };
 
-  const defaultPlaceholderImage = 'https://placehold.co/600x400/333333/FFFFFF?text=Project+Media';
+  const getStatusConfig = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'approved':
+        return {
+          icon: CheckCircle,
+          className: 'bg-green-500/20 text-green-400 border-green-500/30',
+          bgClass: 'bg-green-500/10'
+        };
+      case 'pending':
+        return {
+          icon: Clock,
+          className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+          bgClass: 'bg-yellow-500/10'
+        };
+      default:
+        return {
+          icon: AlertTriangle,
+          className: 'bg-red-500/20 text-red-400 border-red-500/30',
+          bgClass: 'bg-red-500/10'
+        };
+    }
+  };
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950 text-indigo-400 text-xl">
-      <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-500"></div>
-      <p className="ml-4">Loading project details...</p>
-    </div>
-  );
-  if (error) return <div className="min-h-screen flex items-center justify-center bg-gray-950 text-red-400 text-xl">{error}</div>;
-  if (!project) return <div className="min-h-screen flex items-center justify-center bg-gray-950 text-gray-400 text-xl">No project data found.</div>;
+  const getMediaIcon = (mediaType: string) => {
+    switch (mediaType) {
+      case 'image':
+        return ImageIcon;
+      case 'video':
+        return Video;
+      case 'link':
+        return ExternalLink;
+      default:
+        return Camera;
+    }
+  };
 
-  return (
-    <main className="min-h-screen bg-gray-950 text-gray-100 font-inter relative overflow-hidden py-12">
-      {/* Global background grid pattern */}
-      <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
-        <div className="absolute inset-0 bg-grid-pattern animate-grid-pulse"></div>
-      </div>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 text-white relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/3 left-1/3 w-60 h-60 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 rounded-full blur-3xl animate-pulse delay-500"></div>
+        </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="max-w-6xl w-full mx-auto px-4 relative z-10"
-      >
-        <div className="bg-gray-900 p-8 rounded-2xl shadow-2xl border border-gray-800">
-          {/* Back Button */}
-          <div className="mb-8">
-            <button
-              onClick={() => router.back()}
-              className="inline-flex items-center text-indigo-400 hover:text-indigo-300 font-semibold transition-colors duration-300"
-            >
-              <svg className="mr-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-              Back to Portfolio
-            </button>
-          </div>
-
-          {/* Project Header */}
-          <div className="text-center mb-10">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600 mb-4 drop-shadow-lg leading-tight">
-              {project.project_name}
-            </h1>
-            <p className="text-lg md:text-xl text-gray-300 font-light max-w-3xl mx-auto">
-              {project.description}
-            </p>
-            <div className="mt-6 flex justify-center items-center gap-4 flex-wrap">
-              <span className={`px-4 py-2 rounded-full text-sm font-semibold ${project.status === 'approved' ? 'bg-green-700 text-green-200 border border-green-600' : 'bg-gray-700 text-gray-400 border border-gray-600'}`}>
-                Status: {project.status}
-              </span>
-              <span className="px-4 py-2 rounded-full text-sm font-semibold bg-blue-700 text-blue-200 border border-blue-600">
-                Created By: {project.created_by.first_name} {project.created_by.last_name}
-              </span>
-              <span className="px-4 py-2 rounded-full text-sm font-semibold bg-purple-700 text-purple-200 border border-purple-600">
-                Created On: {new Date(project.created_at).toLocaleDateString()}
-              </span>
-            </div>
-          </div>
-
-          {/* Participants Section */}
-          {(project.participants && project.participants.length > 0) && (
-            <div className="mb-10 p-6 bg-gray-800 rounded-xl shadow-inner border border-gray-700">
-              <h2 className="text-2xl font-semibold text-gray-200 border-b border-gray-700 pb-2 mb-4">Team Members</h2>
-              <div className="flex flex-wrap gap-4">
-                {project.participants.map(participant => (
-                  <Link key={participant.user_id} href={`/profile/${participant.user_id}`} className="flex items-center bg-gray-700 hover:bg-gray-600 rounded-full px-4 py-2 transition-colors duration-200 group">
-                    {/* Placeholder for participant profile picture */}
-                    <img
-                      src={`https://placehold.co/32x32/555555/EEEEEE?text=${participant.first_name[0]}`}
-                      alt={participant.first_name}
-                      className="w-8 h-8 rounded-full object-cover mr-2 border border-gray-500"
-                    />
-                    <span className="text-gray-200 font-medium group-hover:text-white">{participant.first_name} {participant.last_name}</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Skills Section */}
-          {(project.skills && project.skills.length > 0) && (
-            <div className="mb-10 p-6 bg-gray-800 rounded-xl shadow-inner border border-gray-700">
-              <h2 className="text-2xl font-semibold text-gray-200 border-b border-gray-700 pb-2 mb-4">Key Technologies & Skills</h2>
-              <div className="flex flex-wrap gap-3">
-                {project.skills.map((skill, index) => (
-                  <span key={index} className="bg-indigo-700 text-indigo-200 px-4 py-2 rounded-lg text-md font-medium border border-indigo-600">
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Media Section */}
-          {(project.media && project.media.length > 0) && (
-            <div className="mb-10 p-6 bg-gray-800 rounded-xl shadow-inner border border-gray-700">
-              <h2 className="text-2xl font-semibold text-gray-200 border-b border-gray-700 pb-2 mb-4">Project Media</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {project.media.map((item, index) => (
-                  <div key={index} className="bg-gray-700 rounded-lg overflow-hidden shadow-md border border-gray-600 flex flex-col">
-                    {item.media_type === 'image' && (
-                      <div className="relative w-full h-48 bg-gray-600 flex items-center justify-center">
-                        <Image
-                          src={item.url.startsWith('http') ? item.url : `${backendUrl}${item.url}`}
-                          alt={item.description || `Project image ${index + 1}`}
-                          layout="fill"
-                          objectFit="cover"
-                          onError={(e) => {
-                            e.currentTarget.src = defaultPlaceholderImage;
-                            e.currentTarget.onerror = null;
-                          }}
-                        />
-                      </div>
-                    )}
-                    {item.media_type === 'video' && (
-                      <div className="relative w-full h-48 bg-gray-600 flex items-center justify-center">
-                        {/* Embedding videos directly might require specific embed codes or iframes */}
-                        {/* For simplicity, linking to video or using a placeholder */}
-                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline text-center p-4">
-                          <svg className="mx-auto mb-2 w-10 h-10 text-cyan-400" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 3H3C2 3 1 4 1 5v14c0 1 1 2 2 2h18c1 0 2-1 2-2V5c0-1-1-2-2-2zm-8 15V6l8 6-8 6z"></path></svg>
-                          Watch Video
-                        </a>
-                      </div>
-                    )}
-                    {item.media_type === 'link' && (
-                      <div className="relative w-full h-48 bg-gray-600 flex items-center justify-center">
-                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline text-center p-4">
-                          <svg className="mx-auto mb-2 w-10 h-10 text-cyan-400" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15H9V7h2v10zm4 0h-2V7h2v10z"></path></svg>
-                          View Link
-                        </a>
-                      </div>
-                    )}
-                    {item.description && (
-                      <div className="p-4 text-gray-300 text-sm">
-                        <p className="font-medium">{item.description}</p>
-                      </div>
-                    )}
+        <div className="container mx-auto px-4 py-8 relative z-10">
+          <div className="max-w-6xl mx-auto">
+            {/* Hero Skeleton */}
+            <div className="relative overflow-hidden bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-xl border border-white/10 rounded-3xl p-8 mb-8">
+              <div className="space-y-6">
+                <Skeleton className="h-10 w-32 bg-white/10" />
+                <div className="text-center space-y-4">
+                  <Skeleton className="h-16 w-3/4 mx-auto bg-white/10" />
+                  <Skeleton className="h-6 w-full max-w-3xl mx-auto bg-white/10" />
+                  <div className="flex justify-center gap-4 flex-wrap">
+                    <Skeleton className="h-8 w-24 bg-white/10 rounded-full" />
+                    <Skeleton className="h-8 w-32 bg-white/10 rounded-full" />
+                    <Skeleton className="h-8 w-28 bg-white/10 rounded-full" />
                   </div>
-                ))}
+                </div>
               </div>
             </div>
-          )}
-
-          {/* Footer for project details (optional) */}
-          <div className="text-center text-gray-500 text-sm mt-10">
-            <p>Last updated: {new Date(project.updated_at).toLocaleDateString()} at {new Date(project.updated_at).toLocaleTimeString()}</p>
+            
+            {/* Content Skeleton */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-6">
+                <Skeleton className="h-64 w-full bg-white/5 rounded-2xl" />
+                <Skeleton className="h-48 w-full bg-white/5 rounded-2xl" />
+              </div>
+              <div className="space-y-6">
+                <Skeleton className="h-32 w-full bg-white/5 rounded-2xl" />
+                <Skeleton className="h-40 w-full bg-white/5 rounded-2xl" />
+              </div>
+            </div>
           </div>
         </div>
-      </motion.div>
+      </div>
+    );
+  }
 
-      {/* Global Styles for custom animations */}
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 text-white flex items-center justify-center p-4">
+        <Alert variant="destructive" className="bg-red-900/20 border-red-500/30 text-red-200 w-full max-w-md backdrop-blur-xl">
+          <AlertTriangle className="h-4 w-4 text-red-300" />
+          <AlertTitle className="text-red-100">Error Loading Project</AlertTitle>
+          <AlertDescription className="text-red-200">{error}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
-        body {
-          font-family: 'Inter', sans-serif;
-        }
+  if (!project) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 text-white flex items-center justify-center p-4">
+        <Alert variant="default" className="bg-blue-900/20 border-blue-500/30 text-blue-200 w-full max-w-md backdrop-blur-xl">
+          <AlertTriangle className="h-4 w-4 text-blue-300" />
+          <AlertTitle className="text-blue-100">Not Found</AlertTitle>
+          <AlertDescription className="text-blue-200">
+            No project data found.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
-        /* Hero Section Gradient Animation - Reused for general background effect */
-        @keyframes gradient-x {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
+  const statusConfig = getStatusConfig(project.status);
+  const StatusIcon = statusConfig.icon;
 
-        .animate-gradient-x {
-          background-size: 200% 200%;
-          animation: gradient-x 15s ease infinite;
-        }
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 text-white relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/3 left-1/3 w-60 h-60 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 rounded-full blur-3xl animate-pulse delay-500"></div>
+      </div>
 
-        /* Background Grid Pattern */
-        .bg-grid-pattern {
-          background-image: linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
-                            linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);
-          background-size: 40px 40px;
-        }
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        <div className="max-w-6xl mx-auto">
+          {/* Hero Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="relative overflow-hidden bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-xl border border-white/10 rounded-3xl p-8 mb-8 group hover:border-white/20 transition-all duration-500"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            <div className="relative z-10">
+              {/* Back Button */}
+              <div className="mb-8">
+                <Button
+                  onClick={() => router.back()}
+                  variant="outline"
+                  className="border-white/20 text-white hover:bg-white/10 bg-transparent backdrop-blur-sm group/back"
+                >
+                  <ArrowLeft className="mr-2 w-5 h-5 group-hover/back:-translate-x-1 transition-transform duration-300" />
+                  Back to Portfolio
+                </Button>
+              </div>
 
-        @keyframes grid-pulse {
-          0% { opacity: 0.05; }
-          50% { opacity: 0.15; }
-          100% { opacity: 0.05; }
-        }
+              {/* Project Header */}
+              <div className="text-center mb-10">
+                <div className="flex items-center gap-2 justify-center mb-4">
+                  <Sparkles className="h-6 w-6 text-yellow-400 animate-pulse" />
+                  <Badge className={`${statusConfig.className} border px-4 py-2 rounded-full flex items-center gap-2 animate-pulse`}>
+                    <StatusIcon className="h-4 w-4" />
+                    {project.status}
+                  </Badge>
+                </div>
+                
+                <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent mb-6 leading-tight">
+                  {project.project_name}
+                </h1>
+                
+                <p className="text-lg md:text-xl text-slate-300 font-light max-w-4xl mx-auto leading-relaxed">
+                  {project.description}
+                </p>
 
-        .animate-grid-pulse {
-          animation: grid-pulse 20s infinite ease-in-out;
-        }
+                {/* Quick Stats */}
+                <div className="flex flex-wrap gap-4 mt-8 justify-center">
+                  <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm rounded-full px-6 py-3 border border-white/10 hover:bg-white/10 transition-all duration-300">
+                    <User className="h-4 w-4 text-blue-400" />
+                    <span className="text-sm font-medium">{project.created_by.first_name} {project.created_by.last_name}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm rounded-full px-6 py-3 border border-white/10 hover:bg-white/10 transition-all duration-300">
+                    <Users className="h-4 w-4 text-green-400" />
+                    <span className="text-sm font-medium">{project.participants.length} Members</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm rounded-full px-6 py-3 border border-white/10 hover:bg-white/10 transition-all duration-300">
+                    <Code2 className="h-4 w-4 text-purple-400" />
+                    <span className="text-sm font-medium">{project.skills.length} Skills</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm rounded-full px-6 py-3 border border-white/10 hover:bg-white/10 transition-all duration-300">
+                    <Calendar className="h-4 w-4 text-cyan-400" />
+                    <span className="text-sm font-medium">{new Date(project.created_at).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
 
-        /* Pulse Light for Hero - Reused for general background effect */
-        .bg-radial-gradient {
-          background: radial-gradient(circle at center, rgba(100, 200, 255, 0.2), transparent 70%);
-        }
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column - Main Content */}
+            <div className="lg:col-span-2 space-y-8">
+              
+              {/* Team Members Section */}
+              {project.participants && project.participants.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.1 }}
+                >
+                  <Card className="bg-white/5 backdrop-blur-xl border-white/10 text-white hover:bg-white/10 transition-all duration-500 group rounded-2xl overflow-hidden">
+                    <CardHeader className="border-b border-white/10">
+                      <CardTitle className="text-2xl font-bold flex items-center gap-3">
+                        <div className="p-2 bg-gradient-to-r from-green-500 to-teal-500 rounded-lg">
+                          <Users className="h-5 w-5" />
+                        </div>
+                        Team Members
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {project.participants.map((participant, index) => (
+                          <Link 
+                            key={participant.user_id} 
+                            href={`/profile/${participant.user_id}`}
+                            className="group/member"
+                          >
+                            <div 
+                              className="flex items-center gap-4 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20 cursor-pointer"
+                              style={{ animationDelay: `${index * 100}ms` }}
+                            >
+                              <div className="relative">
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full opacity-75 group-hover/member:opacity-100 transition-opacity duration-300"></div>
+                                <div className="relative w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold border-2 border-white/20">
+                                  {participant.first_name[0]}{participant.last_name[0]}
+                                </div>
+                              </div>
+                              <div className="flex-1">
+                                <p className="font-semibold text-white group-hover/member:text-blue-300 transition-colors duration-300">
+                                  {participant.first_name} {participant.last_name}
+                                </p>
+                                <p className="text-sm text-slate-400">Team Member</p>
+                              </div>
+                              <ExternalLink className="h-4 w-4 text-slate-400 group-hover/member:text-white opacity-0 group-hover/member:opacity-100 transition-all duration-300" />
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
 
-        @keyframes pulse-light {
-          0% { transform: scale(0.8); opacity: 0.2; }
-          50% { transform: scale(1.2); opacity: 0.4; }
-          100% { transform: scale(0.8); opacity: 0.2; }
-        }
+              {/* Skills & Technologies Section */}
+              {project.skills && project.skills.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                >
+                  <Card className="bg-white/5 backdrop-blur-xl border-white/10 text-white hover:bg-white/10 transition-all duration-500 group rounded-2xl overflow-hidden">
+                    <CardHeader className="border-b border-white/10">
+                      <CardTitle className="text-2xl font-bold flex items-center gap-3">
+                        <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
+                          <Code2 className="h-5 w-5" />
+                        </div>
+                        Technologies & Skills
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-6">
+                      <div className="flex flex-wrap gap-3">
+                        {project.skills.map((skill, index) => (
+                          <Badge 
+                            key={index} 
+                            className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 px-4 py-2 rounded-full hover:from-purple-500/30 hover:to-pink-500/30 transition-all duration-300 transform hover:scale-105 cursor-default"
+                            style={{ animationDelay: `${index * 100}ms` }}
+                          >
+                            {skill}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
 
-        .animate-pulse-light {
-          animation: pulse-light 10s infinite ease-in-out;
-        }
+              {/* Project Media Section */}
+              {project.media && project.media.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                >
+                  <Card className="bg-white/5 backdrop-blur-xl border-white/10 text-white hover:bg-white/10 transition-all duration-500 group rounded-2xl overflow-hidden">
+                    <CardHeader className="border-b border-white/10">
+                      <CardTitle className="text-2xl font-bold flex items-center gap-3">
+                        <div className="p-2 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg">
+                          <Camera className="h-5 w-5" />
+                        </div>
+                        Project Gallery
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {project.media.map((item, index) => {
+                          const MediaIcon = getMediaIcon(item.media_type);
+                          return (
+                            <div 
+                              key={index} 
+                              className="group/media bg-white/5 rounded-xl overflow-hidden border border-white/10 hover:border-white/20 transition-all duration-300 hover:scale-105"
+                              style={{ animationDelay: `${index * 150}ms` }}
+                            >
+                              {item.media_type === 'image' && (
+                                <div className="relative w-full h-48 bg-gradient-to-br from-blue-500/10 to-purple-500/10">
+                                  <Image
+                                    src={item.url.startsWith('http') ? item.url : `${backendUrl}${item.url}`}
+                                    alt={item.description || `Project image ${index + 1}`}
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                    className="object-cover group-hover/media:scale-110 transition-transform duration-500"
+                                    onError={(e) => {
+                                      e.currentTarget.src = 'https://placehold.co/600x400/333333/FFFFFF?text=Image+Not+Found';
+                                      e.currentTarget.onerror = null;
+                                    }}
+                                  />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover/media:opacity-100 transition-opacity duration-300"></div>
+                                </div>
+                              )}
+                              
+                              {item.media_type === 'video' && (
+                                <div className="relative w-full h-48 bg-gradient-to-br from-red-500/10 to-pink-500/10 flex items-center justify-center group/video">
+                                  <a 
+                                    href={item.url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="flex flex-col items-center gap-3 text-center p-6 group-hover/video:scale-110 transition-transform duration-300"
+                                  >
+                                    <div className="p-4 bg-red-500/20 rounded-full group-hover/video:bg-red-500/30 transition-colors duration-300">
+                                      <Play className="w-8 h-8 text-red-400" />
+                                    </div>
+                                    <span className="text-red-300 font-medium">Watch Video</span>
+                                  </a>
+                                </div>
+                              )}
+                              
+                              {item.media_type === 'link' && (
+                                <div className="relative w-full h-48 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 flex items-center justify-center group/link">
+                                  <a 
+                                    href={item.url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="flex flex-col items-center gap-3 text-center p-6 group-hover/link:scale-110 transition-transform duration-300"
+                                  >
+                                    <div className="p-4 bg-cyan-500/20 rounded-full group-hover/link:bg-cyan-500/30 transition-colors duration-300">
+                                      <ExternalLink className="w-8 h-8 text-cyan-400" />
+                                    </div>
+                                    <span className="text-cyan-300 font-medium">Visit Link</span>
+                                  </a>
+                                </div>
+                              )}
+                              
+                              {item.description && (
+                                <div className="p-4">
+                                  <p className="text-slate-300 text-sm leading-relaxed">{item.description}</p>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
+            </div>
 
-        /* Number pulse animation for overview section - Not directly used here but kept for consistency if needed */
-        @keyframes pulse-number {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.03); }
-        }
+            {/* Right Column - Sidebar */}
+            <div className="space-y-6">
+              {/* Project Info */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+              >
+                <Card className="bg-white/5 backdrop-blur-xl border-white/10 text-white hover:bg-white/10 transition-all duration-500 rounded-2xl overflow-hidden">
+                  <CardHeader className="border-b border-white/10">
+                    <CardTitle className="text-xl font-bold">Project Details</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <StatusIcon className={`h-5 w-5 ${statusConfig.className.includes('green') ? 'text-green-400' : statusConfig.className.includes('yellow') ? 'text-yellow-400' : 'text-red-400'}`} />
+                      <div>
+                        <p className="text-sm text-slate-400">Status</p>
+                        <Badge className={`${statusConfig.className} border-0 capitalize`}>
+                          {project.status}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <Calendar className="h-5 w-5 text-blue-400" />
+                      <div>
+                        <p className="text-sm text-slate-400">Created</p>
+                        <p className="text-white font-medium">{new Date(project.created_at).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <Clock className="h-5 w-5 text-purple-400" />
+                      <div>
+                        <p className="text-sm text-slate-400">Last Updated</p>
+                        <p className="text-white font-medium">{new Date(project.updated_at).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
 
-        .animate-pulse-number {
-          animation: pulse-number 2s ease-in-out infinite;
-        }
-      `}</style>
-    </main>
+              {/* Project Creator */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                <Card className="bg-white/5 backdrop-blur-xl border-white/10 text-white hover:bg-white/10 transition-all duration-500 rounded-2xl overflow-hidden">
+                  <CardHeader className="border-b border-white/10">
+                    <CardTitle className="text-xl font-bold">Project Creator</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <Link href={`/profile/${project.created_by.user_id}`} className="group/creator">
+                      <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20 cursor-pointer">
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full opacity-75 group-hover/creator:opacity-100 transition-opacity duration-300"></div>
+                          <div className="relative w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold border-2 border-white/20">
+                            {project.created_by.first_name[0]}{project.created_by.last_name[0]}
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-white group-hover/creator:text-blue-300 transition-colors duration-300">
+                            {project.created_by.first_name} {project.created_by.last_name}
+                          </p>
+                          <p className="text-sm text-slate-400">{project.created_by.email}</p>
+                        </div>
+                        <ExternalLink className="h-4 w-4 text-slate-400 group-hover/creator:text-white opacity-0 group-hover/creator:opacity-100 transition-all duration-300" />
+                      </div>
+                    </Link>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
