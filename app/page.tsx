@@ -10,22 +10,15 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "../components/ui/badge";
 import {
-  Github,
-  Linkedin,
   Mail,
   Code,
   Database,
-  Smartphone,
   Globe,
   Users,
   Award,
   Zap,
   LucideIcon,
-  Sparkles,
-  Briefcase,
-  Calendar,
   ExternalLink,
-  Code2,
 } from "lucide-react"; // Added missing icons
 import Link from "next/link";
 import Image from "next/image";
@@ -160,15 +153,6 @@ const TECH_STACK: TechStack[] = [
   // { name: "AI/ML", color: "bg-red-500/20 text-red-300" },
   // { name: "Cloud", color: "bg-indigo-500/20 text-indigo-300" },
 ];
-
-const FEATURED_PROJECT_TECHNOLOGIES: string[] = [
-  "React",
-  "Node.js",
-  "Python",
-  "TensorFlow",
-];
-
-const SOCIAL_ICONS: LucideIcon[] = [Github, Linkedin, Mail];
 
 const NAV_ITEMS: string[] = [
   "About",
@@ -442,7 +426,7 @@ const ProjectsSection: React.FC<{
       <p className="text-slate-300 max-w-2xl mx-auto">
         {" "}
         {/* Adjusted text color */}
-        Explore some of our latest work and see how we've helped businesses
+        Explore some of our latest work and see how we&apos;ve helped businesses
         transform their digital presence
       </p>
     </div>
@@ -503,7 +487,7 @@ const AboutSection: React.FC = () => (
           technology, develop skills, and create impactful solutions. We aim to
           foster a supportive environment where every member can grow, share
           knowledge, and work on exciting projects that make a difference.
-          Whether it's coding, designing, or problem-solving, MillerBit is all
+          Whether it&apos;s coding, designing, or problem-solving, MillerBit is all
           about teamwork and creativity!
         </p>
         <div className="flex flex-wrap gap-3">
@@ -614,7 +598,7 @@ const ContactSection: React.FC = () => (
       <p className="text-slate-300 mb-8">
         {" "}
         {/* Adjusted text color */}
-        Ready to start your next project? Let's discuss how we can help bring
+        Ready to start your next project? Let&apos;s discuss how we can help bring
         your ideas to life.
       </p>
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -669,7 +653,7 @@ const MillerBitLanding: React.FC = () => {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        const mappedProjects: Project[] = data.map((p: any) => ({
+        const mappedProjects: Project[] = data.map((p: Project) => ({
           project_id: p.project_id,
           project_name: p.project_name,
           description: p.description,
@@ -691,8 +675,8 @@ const MillerBitLanding: React.FC = () => {
               : "/placeholder.svg?height=300&width=400",
         }));
         setProjects(mappedProjects);
-      } catch (e: any) {
-        setErrorProjects(e.message);
+      } catch (e: unknown) {
+        setErrorProjects(e instanceof Error ? e.message : "An unknown error occurred.");
       } finally {
         setLoadingProjects(false);
       }
@@ -708,8 +692,8 @@ const MillerBitLanding: React.FC = () => {
         }
         const data = await response.json();
         setDashboardData(data);
-      } catch (e: any) {
-        console.error("Error fetching dashboard data:", e.message);
+      } catch (e: unknown) {
+        console.error("Error fetching dashboard data:", e instanceof Error ? e.message : "An unknown error occurred.");
       }
     };
 
@@ -721,8 +705,8 @@ const MillerBitLanding: React.FC = () => {
         }
         const data = await response.json();
         setTeamMembers(data);
-      } catch (e: any) {
-        setErrorTeam(e.message);
+      } catch (e: unknown) {
+        setErrorTeam(e instanceof Error ? e.message : "An unknown error occurred.");
       } finally {
         setLoadingTeam(false);
       }

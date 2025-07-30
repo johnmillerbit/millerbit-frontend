@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton"; // Import Skeleton for loading states
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // Import Alert for error messages
 import { AlertTriangle, User, Package, Hourglass } from "lucide-react"; // Using Lucide Icons for better consistency
-import { Button } from "@/components/ui/button"; // Import Button component
 import Link from "next/link"; // Import Link for navigation
 import Cookies from "js-cookie";
 
@@ -49,8 +48,8 @@ export default function AdminDashboardPage() {
 
         const data: DashboardData = await response.json();
         setDashboardData(data);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "An unknown error occurred.");
       } finally {
         setLoading(false);
       }

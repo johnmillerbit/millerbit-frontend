@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,6 @@ import {
   ArrowLeft, 
   Save, 
   Plus, 
-  X, 
   Upload, 
   AlertTriangle,
   Sparkles,
@@ -69,16 +68,18 @@ interface Skill {
   skill_name: string;
 }
 
+interface MediaItem {
+  media_type: string;
+  url: string;
+  description?: string;
+}
+
 interface FormData {
   project_name: string;
   description: string;
-  participants: string[]; // Added participants to FormData
+  participants: string[];
   skills: string[];
-  media: {
-    media_type: string;
-    url: string;
-    description?: string;
-  }[];
+  media: MediaItem[];
 }
 
 export default function ProjectEditPage() {
@@ -88,7 +89,7 @@ export default function ProjectEditPage() {
   const [formData, setFormData] = useState<FormData>({
     project_name: '',
     description: '',
-    participants: [], // Initialize participants
+    participants: [],
     skills: [],
     media: []
   });
@@ -96,8 +97,7 @@ export default function ProjectEditPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [newSkill, setNewSkill] = useState('');
-  const [newMedia, setNewMedia] = useState({
+  const [newMedia, setNewMedia] = useState<MediaItem>({
     media_type: 'image',
     url: '',
     description: ''
@@ -116,7 +116,7 @@ export default function ProjectEditPage() {
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-  const fetchUsersAndSkills = async () => {
+  const fetchUsersAndSkills = useCallback(async () => {
     setLoadingUsersSkills(true);
     setErrorUsersSkills(null);
     try {
@@ -147,22 +147,15 @@ export default function ProjectEditPage() {
       const skillsData = await skillsResponse.json();
       setAllSkills(skillsData);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching users or skills:", error);
-      setErrorUsersSkills(error.message || "Failed to load users or skills.");
+      setErrorUsersSkills((error as Error).message || "Failed to load users or skills.");
     } finally {
       setLoadingUsersSkills(false);
     }
-  };
+  }, [backendUrl]);
 
-  useEffect(() => {
-    if (id) {
-      fetchProjectDetails(id as string);
-      fetchUsersAndSkills(); // Fetch users and skills when component mounts
-    }
-  }, [id, backendUrl]);
-
-  const fetchProjectDetails = async (projectId: string) => {
+  const fetchProjectDetails = useCallback(async (projectId: string) => {
     setLoading(true);
     setError('');
     try {
@@ -174,7 +167,7 @@ export default function ProjectEditPage() {
         setFormData({
           project_name: data.project_name,
           description: data.description,
-          participants: data.participants.map((p: User) => p.user_id) || [], // Populate participants
+          participants: data.participants.map((p: User) => p.user_id) || [],
           skills: data.skills || [],
           media: data.media || []
         });
@@ -185,30 +178,26 @@ export default function ProjectEditPage() {
         const errorData = await response.json();
         setError(errorData.message || 'Failed to fetch project details');
       }
-    } catch (err: any) {
-      setError('An unexpected error occurred: ' + err.message);
+    } catch (err: unknown) {
+      setError('An unexpected error occurred: ' + (err as Error).message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [backendUrl]);
 
-  const handleInputChange = (field: keyof FormData, value: any) => {
+  useEffect(() => {
+    if (id) {
+      fetchProjectDetails(id as string);
+      fetchUsersAndSkills();
+    }
+  }, [id, fetchProjectDetails, fetchUsersAndSkills]);
+
+  const handleInputChange = (field: keyof FormData, value: string | string[] | MediaItem[]) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
-
-  // const addSkill = () => {
-  //   if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
-  //     handleInputChange('skills', [...formData.skills, newSkill.trim()]);
-  //     setNewSkill('');
-  //   }
-  // };
-
-  // const removeSkill = (skillToRemove: string) => {
-  //   handleInputChange('skills', formData.skills.filter(skill => skill !== skillToRemove));
-  // };
 
   const addMedia = () => {
     if (newMedia.url.trim()) {
@@ -270,8 +259,8 @@ export default function ProjectEditPage() {
         const errorData = await response.json();
         setError(errorData.message || 'Failed to update project');
       }
-    } catch (err: any) {
-      setError('An unexpected error occurred: ' + err.message);
+    } catch (err: unknown) {
+      setError('An unexpected error occurred: ' + (err as Error).message);
     } finally {
       setSaving(false);
     }
@@ -298,8 +287,8 @@ export default function ProjectEditPage() {
         const errorData = await response.json();
         setError(errorData.message || 'Failed to delete project');
       }
-    } catch (err: any) {
-      setError('An unexpected error occurred: ' + err.message);
+    } catch (err: unknown) {
+      setError('An unexpected error occurred: ' + (err as Error).message);
     } finally {
       setShowDeleteConfirm(false);
     }

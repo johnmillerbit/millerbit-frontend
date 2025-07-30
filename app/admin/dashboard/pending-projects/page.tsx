@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -55,11 +55,7 @@ export default function PendingProjectsPage() {
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-  useEffect(() => {
-    fetchPendingProjects();
-  }, []);
-
-  const fetchPendingProjects = async () => {
+  const fetchPendingProjects = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -86,12 +82,16 @@ export default function PendingProjectsPage() {
 
       const data: Project[] = await response.json();
       setPendingProjects(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An unknown error occurred.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [backendUrl]); // Add backendUrl to the dependency array
+
+  useEffect(() => {
+    fetchPendingProjects();
+  }, [fetchPendingProjects]);
 
   const handleApprove = async (projectId: string) => {
     try {
@@ -115,8 +115,8 @@ export default function PendingProjectsPage() {
 
       // Refresh the list of pending projects
       fetchPendingProjects();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An unknown error occurred.");
     }
   };
 
@@ -149,8 +149,8 @@ export default function PendingProjectsPage() {
       setIsRejectDialogOpen(false);
       setRejectionReason("");
       setSelectedProjectId(null);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An unknown error occurred.");
     }
   };
 
@@ -251,7 +251,7 @@ export default function PendingProjectsPage() {
                                 <DialogHeader>
                                   <DialogTitle className="text-white">Reject Project</DialogTitle>
                                   <DialogDescription className="text-gray-400">
-                                    Enter a reason for rejecting "{project.project_name}". This will be sent to the project creator.
+                                    Enter a reason for rejecting &quot;{project.project_name}&quot;. This will be sent to the project creator.
                                   </DialogDescription>
                                 </DialogHeader>
                                 <div className="grid gap-4 py-4">

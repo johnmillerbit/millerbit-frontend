@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -32,8 +33,8 @@ export default function LoginPage() {
       } else {
         setError(data.message || 'Login failed');
       }
-    } catch (err: any) {
-      setError('An unexpected error occurred: ' + err.message);
+    } catch (err: unknown) {
+      setError('An unexpected error occurred: ' + (err instanceof Error ? err.message : String(err)));
     }
   };
 
@@ -53,10 +54,12 @@ export default function LoginPage() {
         {/* left side - Image/Illustration */}
         <div className="relative w-full md:w-1/2 p-4 hidden md:flex items-center justify-center bg-gradient-to-br from-blue-900 to-purple-900 rounded-l-2xl overflow-hidden">
           {/* Abstract tech illustration or placeholder */}
-          <img
+          <Image
             src="https://placehold.co/400x400/1a202c/9ca3af?text=Secure+Login" // Abstract tech placeholder
             alt="Login Illustration"
-            className="w-full h-full object-cover rounded-l-2xl opacity-80"
+            layout="fill"
+            objectFit="cover"
+            className="rounded-l-2xl opacity-80"
           />
           <div className="absolute inset-0 bg-radial-gradient animate-pulse-light opacity-30"></div>
         </div>

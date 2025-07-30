@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useRef } from 'react'; // Added useRef
 import { useParams, useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, UploadCloud, Save, Loader2, X, User, Mail, Briefcase, FileText, Code2, Camera, ArrowLeft, Sparkles, CheckCircle } from "lucide-react"; // Added CheckCircle
@@ -120,8 +120,8 @@ export default function EditMemberProfilePage() {
           setCurrentSkills(userSkillsData.map(s => s.skill_name));
         }
 
-      } catch (err: any) {
-        setError(err.message || "An unexpected error occurred while fetching profile.");
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "An unexpected error occurred while fetching profile.");
       } finally {
         setLoading(false);
       }
@@ -252,8 +252,8 @@ export default function EditMemberProfilePage() {
       // Auto-hide success message after 3 seconds
       setTimeout(() => setImageUploadSuccess(null), 3000);
 
-    } catch (err: any) {
-      setImageUploadError(err.message || "Failed to upload profile picture.");
+    } catch (err: unknown) {
+      setImageUploadError(err instanceof Error ? err.message : "Failed to upload profile picture.");
     } finally {
       setUploadingImage(false);
     }
@@ -318,8 +318,8 @@ export default function EditMemberProfilePage() {
         router.push(`/profile/${userId}`);
       }, 1500); // Show success for 1.5 seconds
 
-    } catch (err: any) {
-      setFormError(err.message || "An unexpected error occurred during profile update.");
+    } catch (err: unknown) {
+      setFormError(err instanceof Error ? err.message : "An unexpected error occurred during profile update.");
     } finally {
       setIsSaving(false);
     }
@@ -390,7 +390,7 @@ export default function EditMemberProfilePage() {
           <AlertTriangle className="h-4 w-4 text-blue-300" />
           <AlertTitle className="text-blue-100">Not Found</AlertTitle>
           <AlertDescription className="text-blue-200">
-            The member with ID "{userId}" could not be found or loaded.
+            The member with ID &quot;{userId}&quot; could not be found or loaded.
           </AlertDescription>
         </Alert>
       </div>

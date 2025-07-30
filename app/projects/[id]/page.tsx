@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Cookies from 'js-cookie';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -15,17 +14,13 @@ import {
   ArrowLeft, 
   Users, 
   Calendar, 
-  User, 
   Code2, 
   Camera, 
-  Video, 
   ExternalLink, 
   Clock,
-  CheckCircle,
   AlertTriangle,
   Sparkles,
-  Play,
-  Image as ImageIcon
+  Play
 } from "lucide-react";
 
 interface Project {
@@ -66,13 +61,7 @@ export default function ProjectDetailPage() {
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-  useEffect(() => {
-    if (id) {
-      fetchProjectDetails(id as string);
-    }
-  }, [id, backendUrl]);
-
-  const fetchProjectDetails = async (projectId: string) => {
+  const fetchProjectDetails = useCallback(async (projectId: string) => {
     setLoading(true);
     setError('');
     try {
@@ -85,25 +74,18 @@ export default function ProjectDetailPage() {
         const errorData = await response.json();
         setError(errorData.message || 'Failed to fetch project details');
       }
-    } catch (err: any) {
-      setError('An unexpected error occurred: ' + err.message);
+    } catch (err: unknown) {
+      setError('An unexpected error occurred: ' + (err as Error).message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [backendUrl]);
 
-  const getMediaIcon = (mediaType: string) => {
-    switch (mediaType) {
-      case 'image':
-        return ImageIcon;
-      case 'video':
-        return Video;
-      case 'link':
-        return ExternalLink;
-      default:
-        return Camera;
+  useEffect(() => {
+    if (id) {
+      fetchProjectDetails(id as string);
     }
-  };
+  }, [id, fetchProjectDetails]);
 
   if (loading) {
     return (
@@ -381,7 +363,6 @@ export default function ProjectDetailPage() {
                     <CardContent className="p-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {project.media.map((item, index) => {
-                          const MediaIcon = getMediaIcon(item.media_type);
                           return (
                             <div 
                               key={index} 

@@ -1,16 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { ArrowLeft, Users, Calendar, Code2, AlertTriangle, Sparkles, Image as ImageIcon } from "lucide-react";
+import { Users, Calendar, AlertTriangle, Sparkles, Image as ImageIcon } from "lucide-react";
 
 interface Project {
   project_id: string;
@@ -44,11 +43,7 @@ const ProjectsPage = () => {
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-  useEffect(() => {
-    fetchAllProjects(currentPage);
-  }, [currentPage, backendUrl]);
-
-  const fetchAllProjects = async (page: number) => {
+  const fetchAllProjects = useCallback(async (page: number) => {
     setLoading(true);
     setError('');
     try {
@@ -62,12 +57,16 @@ const ProjectsPage = () => {
         const errorData = await response.json();
         setError(errorData.message || 'Failed to fetch projects');
       }
-    } catch (err: any) {
-      setError('An unexpected error occurred: ' + err.message);
+    } catch (err: unknown) {
+      setError('An unexpected error occurred: ' + (err as Error).message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [backendUrl, projectsPerPage]);
+
+  useEffect(() => {
+    fetchAllProjects(currentPage);
+  }, [currentPage, fetchAllProjects]);
 
   const truncateDescription = (text: string, wordLimit: number) => {
     if (!text) return '';

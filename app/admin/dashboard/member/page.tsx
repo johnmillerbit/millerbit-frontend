@@ -36,7 +36,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogClose,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -48,7 +47,6 @@ import {
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -123,9 +121,11 @@ const CreateMemberForm: React.FC<CreateMemberFormProps> = ({
       const newMember: Member = await response.json();
       onSave(newMember);
       onCloseDialog();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setFormError(
-        err.message || "An unexpected error occurred during member creation."
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred during member creation."
       );
     } finally {
       setIsSaving(false);
@@ -294,9 +294,11 @@ const EditMemberForm: React.FC<EditMemberFormProps> = ({
 
       onSave(formData);
       onCloseDialog();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setFormError(
-        err.message || "An unexpected error occurred during update."
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred during update."
       );
     } finally {
       setIsSaving(false);
@@ -466,7 +468,7 @@ const EditMemberDialog: React.FC<EditMemberDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="text-white">Edit Member</DialogTitle>
           <DialogDescription className="text-slate-400">
-            Make changes to the member's profile here. Click save when you're
+            Make changes to the member&apos;s profile here. Click save when you&apos;re
             done.
           </DialogDescription>
         </DialogHeader>
@@ -603,8 +605,8 @@ export default function MemberManagementPage() {
 
       const data: Member[] = await response.json();
       setMembers(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An unknown error occurred.");
     } finally {
       setLoading(false);
     }
@@ -677,8 +679,8 @@ export default function MemberManagementPage() {
       );
       setIsDeleteDialogOpen(false);
       setMemberToDelete(null);
-    } catch (err: any) {
-      setError(err.message || "Failed to delete member.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to delete member.");
       setIsDeleteDialogOpen(false);
       setMemberToDelete(null);
     }

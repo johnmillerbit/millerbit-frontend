@@ -64,8 +64,8 @@ export default function ResetPasswordPage() {
       setTimeout(() => {
         router.push('/admin/login');
       }, 3000); // Redirect to login after 3 seconds
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred.');
     } finally {
       setLoading(false);
     }

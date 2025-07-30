@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -31,11 +31,7 @@ const MembersPage = () => {
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-  useEffect(() => {
-    fetchAllMembers(currentPage);
-  }, [currentPage, backendUrl]);
-
-  const fetchAllMembers = async (page: number) => {
+  const fetchAllMembers = useCallback(async (page: number) => {
     setLoading(true);
     setError('');
     try {
@@ -49,12 +45,16 @@ const MembersPage = () => {
         const errorData = await response.json();
         setError(errorData.message || 'Failed to fetch members');
       }
-    } catch (err: any) {
-      setError('An unexpected error occurred: ' + err.message);
+    } catch (err: unknown) {
+      setError('An unexpected error occurred: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
       setLoading(false);
     }
-  };
+  }, [backendUrl, membersPerPage]);
+
+  useEffect(() => {
+    fetchAllMembers(currentPage);
+  }, [currentPage, fetchAllMembers]);
 
   if (loading) {
     return (

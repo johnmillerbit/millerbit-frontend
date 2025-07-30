@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import Cookies from 'js-cookie';
 import { motion, AnimatePresence } from 'framer-motion';
 import React from 'react';
@@ -199,10 +200,12 @@ const ProjectPictureStep: React.FC<{
           <div className="w-full h-64 border-2 border-dashed border-white/30 rounded-xl flex flex-col items-center justify-center text-slate-400 hover:border-orange-400 hover:text-orange-300 transition-all duration-300 relative overflow-hidden group">
             {projectPictureUrl ? (
               <>
-                <img
+                <Image
                   src={projectPictureUrl}
                   alt="Project Preview"
                   className="absolute inset-0 w-full h-full object-cover rounded-xl"
+                  width={500}
+                  height={500}
                 />
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <p className="text-white text-lg font-semibold">Change Picture</p>
@@ -548,7 +551,6 @@ const MediaStep: React.FC<{
   isSubmitting: boolean;
 }> = ({
   media,
-  setMedia,
   newMediaUrl,
   setNewMediaUrl,
   newMediaType,
@@ -843,10 +845,10 @@ const CreateProjectForm = () => {
       const skillsData = await skillsResponse.json();
       setAllSkills(skillsData);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching users or skills:", error);
-      setErrorUsersSkills(error.message || "Failed to load users or skills.");
-      toast.error(`Failed to load users or skills: ${error.message}`);
+      setErrorUsersSkills((error as Error).message || "Failed to load users or skills.");
+      toast.error(`Failed to load users or skills: ${(error as Error).message}`);
     } finally {
       setLoadingUsersSkills(false);
     }
@@ -892,7 +894,7 @@ const CreateProjectForm = () => {
     // Basic URL validation
     try {
       new URL(url);
-    } catch (_) {
+    } catch {
       toast.error("Please enter a valid URL (e.g., https://example.com).");
       return;
     }
@@ -916,7 +918,7 @@ const CreateProjectForm = () => {
   };
 
   const handleRemoveMedia = (indexToRemove: number) => {
-    setMedia((prev) => prev.filter((_, index) => index !== indexToRemove));
+    setMedia((prev) => prev.filter((index) => index !== indexToRemove));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -968,10 +970,10 @@ const CreateProjectForm = () => {
       console.log("Project created with ID:", projectId);
       toast.success("Your new project has been successfully created.");
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating project:', error);
       console.error('Full error details:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
-      toast.error(error.message || "There was an error creating your project. Please try again.");
+      toast.error((error as Error).message || "There was an error creating your project. Please try again.");
     } finally {
       setIsSubmitting(false); // Ensure isSubmitting is set to false in all cases
     }

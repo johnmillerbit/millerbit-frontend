@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, Eye, Edit, Trash2, MoreHorizontal } from "lucide-react";
+import { AlertTriangle, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Cookies from "js-cookie";
@@ -20,12 +20,9 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -217,11 +214,7 @@ export default function ProjectManagementPage() {
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-  useEffect(() => {
-    fetchAllProjects();
-  }, []);
-
-  const fetchAllProjects = async () => {
+  const fetchAllProjects = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -248,12 +241,16 @@ export default function ProjectManagementPage() {
 
       const data: Project[] = await response.json();
       setProjects(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An unknown error occurred.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [backendUrl]);
+
+  useEffect(() => {
+    fetchAllProjects();
+  }, [fetchAllProjects]);
 
   const handleDeleteProject = async () => {
     if (!projectToDelete) return;
@@ -281,8 +278,8 @@ export default function ProjectManagementPage() {
       fetchAllProjects();
       setIsDeleteDialogOpen(false);
       setProjectToDelete(null);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An unknown error occurred.");
     }
   };
 

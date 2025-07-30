@@ -6,7 +6,6 @@ import { useParams } from "next/navigation";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -68,7 +67,6 @@ export default function MemberProfilePage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState("about");
 
   useEffect(() => {
     if (!userId) {
@@ -118,9 +116,11 @@ export default function MemberProfilePage() {
           const projectsData: Project[] = await projectsResponse.json();
           setProjects(projectsData);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(
-          err.message || "An unexpected error occurred while fetching profile."
+          err instanceof Error
+            ? err.message
+            : "An unexpected error occurred while fetching profile."
         );
       } finally {
         setLoading(false);
@@ -191,7 +191,7 @@ export default function MemberProfilePage() {
           <AlertTriangle className="h-4 w-4 text-blue-300" />
           <AlertTitle className="text-blue-100">Not Found</AlertTitle>
           <AlertDescription className="text-blue-200">
-            The member with ID "{userId}" could not be found.
+            The member with ID &quot;{userId}&quot; could not be found.
           </AlertDescription>
         </Alert>
       </div>
@@ -401,12 +401,9 @@ export default function MemberProfilePage() {
 
                           {project.description && (
                             <p className="text-slate-300 mb-4 leading-relaxed break-words">
-                              {project.description.length > 100 ? (
-                                <span>
-                                  {" "}
-                                  {project.description.slice(0, 100)}...
-                                </span>
-                              ) : null}
+                              {project.description.length > 100
+                                ? `${project.description.slice(0, 100)}...`
+                                : project.description}
                             </p>
                           )}
 
