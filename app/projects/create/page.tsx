@@ -918,7 +918,7 @@ const CreateProjectForm = () => {
   };
 
   const handleRemoveMedia = (indexToRemove: number) => {
-    setMedia((prev) => prev.filter((index) => index !== indexToRemove));
+    setMedia((prev) => prev.filter((_, i) => i !== indexToRemove));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
