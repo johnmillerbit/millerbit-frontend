@@ -16,6 +16,24 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "MillerBit - A Showcase of Innovation",
   description: "Explore the projects and talents of the MillerBit team.",
+  keywords: "MillerBit, projects, portfolio, innovation, technology, software development, web development, mobile development, AI, machine learning, cybersecurity, cloud computing, data science, UI/UX design, digital solutions",
+  authors: [{ name: "MillerBit Team" }],
+  openGraph: {
+    title: "MillerBit - A Showcase of Innovation",
+    description: "Explore the projects and talents of the MillerBit team.",
+    url: "https://www.millerbit.com",
+    siteName: "MillerBit",
+    images: [
+      {
+        url: "https://www.millerbit.com/millerbitLogo.jpg",
+        width: 800,
+        height: 600,
+        alt: "MillerBit Logo",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

@@ -102,7 +102,7 @@ export default function PendingProjectsPage() {
       }
 
       const response = await fetch(`${backendUrl}/api/projects/${projectId}/approve`, {
-        method: "POST",
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -131,7 +131,7 @@ export default function PendingProjectsPage() {
       }
 
       const response = await fetch(`${backendUrl}/api/projects/${selectedProjectId}/reject`, {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,

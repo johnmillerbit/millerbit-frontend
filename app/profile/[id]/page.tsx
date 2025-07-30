@@ -1,15 +1,33 @@
 // app/profile/[id]/page.tsx
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, Github, Linkedin, ExternalLink, Mail, Calendar, MapPin, Award, Briefcase, Code2, Sparkles } from "lucide-react";
+import {
+  AlertTriangle,
+  Github,
+  Linkedin,
+  ExternalLink,
+  Mail,
+  Calendar,
+  MapPin,
+  Award,
+  Briefcase,
+  Code2,
+  Sparkles,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import Cookies from 'js-cookie';
-import Image from 'next/image';
+import Cookies from "js-cookie";
+import Image from "next/image";
 
 // Types
 export type MemberDetail = {
@@ -44,13 +62,13 @@ export type Project = {
 export default function MemberProfilePage() {
   const params = useParams();
   const userId = params.id as string;
-  
+
   const [member, setMember] = useState<MemberDetail | null>(null);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState('about');
+  const [activeSection, setActiveSection] = useState("about");
 
   useEffect(() => {
     if (!userId) {
@@ -63,33 +81,47 @@ export default function MemberProfilePage() {
       setLoading(true);
       setError(null);
       try {
-        const token = Cookies.get('token');
-        const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+        const token = Cookies.get("token");
+        const headers: HeadersInit = token
+          ? { Authorization: `Bearer ${token}` }
+          : {};
 
         // Fetch Member Details
-        const memberResponse = await fetch(`http://localhost:5000/api/users/${userId}`, { headers });
+        const memberResponse = await fetch(
+          `http://localhost:5000/api/users/${userId}`,
+          { headers }
+        );
         if (!memberResponse.ok) {
-          throw new Error(`Failed to fetch member details: ${memberResponse.status}`);
+          throw new Error(
+            `Failed to fetch member details: ${memberResponse.status}`
+          );
         }
         const memberData: MemberDetail = await memberResponse.json();
         setMember(memberData);
 
         // Fetch Member Skills
-        const skillsResponse = await fetch(`http://localhost:5000/api/users/${userId}/skills`, { headers });
+        const skillsResponse = await fetch(
+          `http://localhost:5000/api/users/${userId}/skills`,
+          { headers }
+        );
         if (skillsResponse.ok) {
           const skillsData: Skill[] = await skillsResponse.json();
           setSkills(skillsData);
         }
 
         // Fetch Member Projects
-        const projectsResponse = await fetch(`http://localhost:5000/api/users/${userId}/projects`, { headers });
+        const projectsResponse = await fetch(
+          `http://localhost:5000/api/users/${userId}/projects`,
+          { headers }
+        );
         if (projectsResponse.ok) {
           const projectsData: Project[] = await projectsResponse.json();
           setProjects(projectsData);
         }
-
       } catch (err: any) {
-        setError(err.message || "An unexpected error occurred while fetching profile.");
+        setError(
+          err.message || "An unexpected error occurred while fetching profile."
+        );
       } finally {
         setLoading(false);
       }
@@ -114,7 +146,7 @@ export default function MemberProfilePage() {
                 </div>
               </div>
             </div>
-            
+
             {/* Content Skeleton */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-6">
@@ -135,9 +167,14 @@ export default function MemberProfilePage() {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 text-white flex items-center justify-center p-4">
-        <Alert variant="destructive" className="bg-red-900/20 border-red-500/30 text-red-200 w-full max-w-md backdrop-blur-xl">
+        <Alert
+          variant="destructive"
+          className="bg-red-900/20 border-red-500/30 text-red-200 w-full max-w-md backdrop-blur-xl"
+        >
           <AlertTriangle className="h-4 w-4 text-red-300" />
-          <AlertTitle className="text-red-100">Error Loading Profile</AlertTitle>
+          <AlertTitle className="text-red-100">
+            Error Loading Profile
+          </AlertTitle>
           <AlertDescription className="text-red-200">{error}</AlertDescription>
         </Alert>
       </div>
@@ -147,7 +184,10 @@ export default function MemberProfilePage() {
   if (!member) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 text-white flex items-center justify-center p-4">
-        <Alert variant="default" className="bg-blue-900/20 border-blue-500/30 text-blue-200 w-full max-w-md backdrop-blur-xl">
+        <Alert
+          variant="default"
+          className="bg-blue-900/20 border-blue-500/30 text-blue-200 w-full max-w-md backdrop-blur-xl"
+        >
           <AlertTriangle className="h-4 w-4 text-blue-300" />
           <AlertTitle className="text-blue-100">Not Found</AlertTitle>
           <AlertDescription className="text-blue-200">
@@ -172,7 +212,7 @@ export default function MemberProfilePage() {
           {/* Hero Section */}
           <div className="relative overflow-hidden bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-xl border border-white/10 rounded-3xl p-8 mb-8 group hover:border-white/20 transition-all duration-500">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            
+
             <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
               {/* Profile Picture */}
               <div className="relative group/avatar">
@@ -188,7 +228,8 @@ export default function MemberProfilePage() {
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-4xl font-bold text-white">
-                      {member.first_name[0]}{member.last_name[0]}
+                      {member.first_name[0]}
+                      {member.last_name[0]}
                     </div>
                   )}
                 </div>
@@ -202,15 +243,15 @@ export default function MemberProfilePage() {
                     {member.role}
                   </Badge>
                 </div>
-                
+
                 <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent mb-4 animate-fade-in">
                   {member.first_name} {member.last_name}
                 </h1>
-                
+
                 <p className="text-xl md:text-2xl text-blue-200 mb-6 font-light">
                   {member.position}
                 </p>
-                
+
                 {member.bio && (
                   <p className="text-slate-300 text-lg leading-relaxed max-w-2xl">
                     {member.bio}
@@ -229,7 +270,9 @@ export default function MemberProfilePage() {
                   </div>
                   <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm rounded-full px-4 py-2 border border-white/10">
                     <Calendar className="h-4 w-4 text-blue-400" />
-                    <span className="text-sm">Since {new Date(member.created_at).getFullYear()}</span>
+                    <span className="text-sm">
+                      Since {new Date(member.created_at).getFullYear()}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -240,7 +283,6 @@ export default function MemberProfilePage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column - Main Content */}
             <div className="lg:col-span-2 space-y-8">
-              
               {/* About Section */}
               <Card className="bg-white/5 backdrop-blur-xl border-white/10 text-white hover:bg-white/10 transition-all duration-500 group rounded-2xl overflow-hidden">
                 <CardHeader className="border-b border-white/10">
@@ -260,14 +302,32 @@ export default function MemberProfilePage() {
                         <p className="text-white font-medium">{member.email}</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-3 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors duration-300">
-                      <div className={`p-2 rounded-lg ${member.status === 'active' ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
-                        <div className={`w-3 h-3 rounded-full ${member.status === 'active' ? 'bg-green-400' : 'bg-red-400'} animate-pulse`}></div>
+                      <div
+                        className={`p-2 rounded-lg ${
+                          member.status === "active"
+                            ? "bg-green-500/20"
+                            : "bg-red-500/20"
+                        }`}
+                      >
+                        <div
+                          className={`w-3 h-3 rounded-full ${
+                            member.status === "active"
+                              ? "bg-green-400"
+                              : "bg-red-400"
+                          } animate-pulse`}
+                        ></div>
                       </div>
                       <div>
                         <p className="text-sm text-slate-400">Status</p>
-                        <Badge className={`${member.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'} border-0 capitalize`}>
+                        <Badge
+                          className={`${
+                            member.status === "active"
+                              ? "bg-green-500/20 text-green-400"
+                              : "bg-red-500/20 text-red-400"
+                          } border-0 capitalize`}
+                        >
                           {member.status}
                         </Badge>
                       </div>
@@ -290,8 +350,8 @@ export default function MemberProfilePage() {
                   <CardContent className="p-6">
                     <div className="flex flex-wrap gap-3">
                       {skills.map((skill, index) => (
-                        <Badge 
-                          key={skill.skill_id} 
+                        <Badge
+                          key={skill.skill_id}
                           className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 px-4 py-2 rounded-full hover:from-purple-500/30 hover:to-pink-500/30 transition-all duration-300 transform hover:scale-105 cursor-default"
                           style={{ animationDelay: `${index * 100}ms` }}
                         >
@@ -317,8 +377,8 @@ export default function MemberProfilePage() {
                   <CardContent className="p-6">
                     <div className="space-y-6">
                       {projects.map((project, index) => (
-                        <div 
-                          key={project.project_id} 
+                        <div
+                          key={project.project_id}
                           className="group/project p-6 bg-white/5 rounded-xl hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20"
                           style={{ animationDelay: `${index * 150}ms` }}
                         >
@@ -326,30 +386,42 @@ export default function MemberProfilePage() {
                             <h3 className="text-xl font-semibold text-white group-hover/project:text-blue-300 transition-colors duration-300">
                               {project.project_name}
                             </h3>
-                            <Badge className={`${
-                              project.status === 'approved' ? 'bg-green-500/20 text-green-400' : 
-                              project.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' : 
-                              'bg-red-500/20 text-red-400'
-                            } border-0 capitalize`}>
+                            <Badge
+                              className={`${
+                                project.status === "approved"
+                                  ? "bg-green-500/20 text-green-400"
+                                  : project.status === "pending"
+                                  ? "bg-yellow-500/20 text-yellow-400"
+                                  : "bg-red-500/20 text-red-400"
+                              } border-0 capitalize`}
+                            >
                               {project.status}
                             </Badge>
                           </div>
-                          
+
                           {project.description && (
-                            <p className="text-slate-300 mb-4 leading-relaxed">
-                              {project.description}
+                            <p className="text-slate-300 mb-4 leading-relaxed break-words">
+                              {project.description.length > 100 ? (
+                                <span>
+                                  {" "}
+                                  {project.description.slice(0, 100)}...
+                                </span>
+                              ) : null}
                             </p>
                           )}
-                          
+
                           <div className="flex justify-between items-center">
                             <span className="text-sm text-slate-400">
-                              Created {new Date(project.created_at).toLocaleDateString()}
+                              Created{" "}
+                              {new Date(
+                                project.created_at
+                              ).toLocaleDateString()}
                             </span>
-                            <a 
-                              href={`/projects/${project.project_id}`} 
+                            <a
+                              href={`/projects/${project.project_id}`}
                               className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors duration-300 group/link"
                             >
-                              View Project 
+                              View Project
                               <ExternalLink className="h-4 w-4 group-hover/link:translate-x-1 transition-transform duration-300" />
                             </a>
                           </div>
@@ -370,21 +442,25 @@ export default function MemberProfilePage() {
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="flex flex-col gap-4">
-                    <a 
-                      href="#" 
+                    <a
+                      href="#"
                       className="flex items-center gap-3 p-3 bg-white/5 rounded-xl hover:bg-gradient-to-r hover:from-gray-600/20 hover:to-gray-700/20 transition-all duration-300 group/social"
                     >
                       <Github className="h-5 w-5 text-gray-300 group-hover/social:text-white transition-colors duration-300" />
-                      <span className="group-hover/social:text-white transition-colors duration-300">GitHub</span>
+                      <span className="group-hover/social:text-white transition-colors duration-300">
+                        GitHub
+                      </span>
                       <ExternalLink className="h-4 w-4 ml-auto opacity-0 group-hover/social:opacity-100 transition-opacity duration-300" />
                     </a>
-                    
-                    <a 
-                      href="#" 
+
+                    <a
+                      href="#"
                       className="flex items-center gap-3 p-3 bg-white/5 rounded-xl hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-blue-700/20 transition-all duration-300 group/social"
                     >
                       <Linkedin className="h-5 w-5 text-blue-400 group-hover/social:text-blue-300 transition-colors duration-300" />
-                      <span className="group-hover/social:text-white transition-colors duration-300">LinkedIn</span>
+                      <span className="group-hover/social:text-white transition-colors duration-300">
+                        LinkedIn
+                      </span>
                       <ExternalLink className="h-4 w-4 ml-auto opacity-0 group-hover/social:opacity-100 transition-opacity duration-300" />
                     </a>
                   </div>
@@ -394,7 +470,9 @@ export default function MemberProfilePage() {
               {/* Quick Info */}
               <Card className="bg-white/5 backdrop-blur-xl border-white/10 text-white hover:bg-white/10 transition-all duration-500 rounded-2xl overflow-hidden">
                 <CardHeader className="border-b border-white/10">
-                  <CardTitle className="text-xl font-bold">Quick Info</CardTitle>
+                  <CardTitle className="text-xl font-bold">
+                    Quick Info
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-4">
@@ -402,15 +480,19 @@ export default function MemberProfilePage() {
                       <Calendar className="h-4 w-4 text-blue-400" />
                       <div>
                         <p className="text-sm text-slate-400">Member Since</p>
-                        <p className="text-white">{new Date(member.created_at).toLocaleDateString()}</p>
+                        <p className="text-white">
+                          {new Date(member.created_at).toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-3">
                       <MapPin className="h-4 w-4 text-green-400" />
                       <div>
                         <p className="text-sm text-slate-400">Last Updated</p>
-                        <p className="text-white">{new Date(member.updated_at).toLocaleDateString()}</p>
+                        <p className="text-white">
+                          {new Date(member.updated_at).toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
                   </div>

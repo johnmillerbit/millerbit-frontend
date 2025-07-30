@@ -52,7 +52,10 @@ interface Project {
     url: string;
     description?: string;
   }[];
+  project_picture_url?: string;
 }
+
+// Helper function to truncate text by word limit
 
 export default function ProjectDetailPage() {
   const { id } = useParams();
@@ -86,29 +89,6 @@ export default function ProjectDetailPage() {
       setError('An unexpected error occurred: ' + err.message);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const getStatusConfig = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'approved':
-        return {
-          icon: CheckCircle,
-          className: 'bg-green-500/20 text-green-400 border-green-500/30',
-          bgClass: 'bg-green-500/10'
-        };
-      case 'pending':
-        return {
-          icon: Clock,
-          className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-          bgClass: 'bg-yellow-500/10'
-        };
-      default:
-        return {
-          icon: AlertTriangle,
-          className: 'bg-red-500/20 text-red-400 border-red-500/30',
-          bgClass: 'bg-red-500/10'
-        };
     }
   };
 
@@ -196,9 +176,6 @@ export default function ProjectDetailPage() {
     );
   }
 
-  const statusConfig = getStatusConfig(project.status);
-  const StatusIcon = statusConfig.icon;
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 text-white relative overflow-hidden">
       {/* Animated Background Elements */}
@@ -228,35 +205,34 @@ export default function ProjectDetailPage() {
                   className="border-white/20 text-white hover:bg-white/10 bg-transparent backdrop-blur-sm group/back"
                 >
                   <ArrowLeft className="mr-2 w-5 h-5 group-hover/back:-translate-x-1 transition-transform duration-300" />
-                  Back to Portfolio
+                  Back
                 </Button>
               </div>
 
               {/* Project Header */}
               <div className="text-center mb-10">
-                <div className="flex items-center gap-2 justify-center mb-4">
-                  <Sparkles className="h-6 w-6 text-yellow-400 animate-pulse" />
-                  <Badge className={`${statusConfig.className} border px-4 py-2 rounded-full flex items-center gap-2 animate-pulse`}>
-                    <StatusIcon className="h-4 w-4" />
-                    {project.status}
-                  </Badge>
-                </div>
-                
+                {project.project_picture_url && (
+                  <div className="relative w-full max-w-3xl mx-auto h-64 md:h-96 rounded-2xl overflow-hidden mb-8 border border-white/20 shadow-lg">
+                    <Image
+                      src={project.project_picture_url.startsWith('http') ? project.project_picture_url : `${backendUrl}${project.project_picture_url}`}
+                      alt={project.project_name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 60vw"
+                      className="object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://placehold.co/900x600/333333/FFFFFF?text=Image+Not+Found';
+                        e.currentTarget.onerror = null;
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                  </div>
+                )}
                 <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent mb-6 leading-tight">
                   {project.project_name}
                 </h1>
                 
-                <p className="text-lg md:text-xl text-slate-300 font-light max-w-4xl mx-auto leading-relaxed">
-                  {project.description}
-                </p>
-
                 {/* Quick Stats */}
-                <div className="flex flex-wrap gap-4 mt-8 justify-center">
-                  <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm rounded-full px-6 py-3 border border-white/10 hover:bg-white/10 transition-all duration-300">
-                    <User className="h-4 w-4 text-blue-400" />
-                    <span className="text-sm font-medium">{project.created_by.first_name} {project.created_by.last_name}</span>
-                  </div>
-                  
+                <div className="flex flex-wrap gap-4 mt-8 justify-center">               
                   <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm rounded-full px-6 py-3 border border-white/10 hover:bg-white/10 transition-all duration-300">
                     <Users className="h-4 w-4 text-green-400" />
                     <span className="text-sm font-medium">{project.participants.length} Members</span>
@@ -280,7 +256,29 @@ export default function ProjectDetailPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column - Main Content */}
             <div className="lg:col-span-2 space-y-8">
-              
+              {/* Project Description Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.05 }}
+              >
+                <Card className="bg-white/5 backdrop-blur-xl border-white/10 text-white hover:bg-white/10 transition-all duration-500 group rounded-2xl overflow-hidden">
+                  <CardHeader className="border-b border-white/10">
+                    <CardTitle className="text-2xl font-bold flex items-center gap-3">
+                      <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg">
+                        <Sparkles className="h-5 w-5" />
+                      </div>
+                      Project Overview
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <p className="text-lg text-slate-300 leading-relaxed break-words">
+                      {project.description || 'No description provided for this project.'}
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
               {/* Team Members Section */}
               {project.participants && project.participants.length > 0 && (
                 <motion.div
@@ -467,16 +465,6 @@ export default function ProjectDetailPage() {
                     <CardTitle className="text-xl font-bold">Project Details</CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 space-y-4">
-                    <div className="flex items-center gap-3">
-                      <StatusIcon className={`h-5 w-5 ${statusConfig.className.includes('green') ? 'text-green-400' : statusConfig.className.includes('yellow') ? 'text-yellow-400' : 'text-red-400'}`} />
-                      <div>
-                        <p className="text-sm text-slate-400">Status</p>
-                        <Badge className={`${statusConfig.className} border-0 capitalize`}>
-                          {project.status}
-                        </Badge>
-                      </div>
-                    </div>
-                    
                     <div className="flex items-center gap-3">
                       <Calendar className="h-5 w-5 text-blue-400" />
                       <div>
