@@ -98,6 +98,8 @@ interface TeamMemberCardProps {
   member: TeamMember;
 }
 
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 // Data constants
 const STATS: Stat[] = [{ value: "24/7", label: "Support" }];
 
@@ -379,7 +381,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => (
       >
         {project.project_picture_url !== null ? (
           <Image
-            src={`http://localhost:5000${project.project_picture_url}`}
+            src={`${backendUrl}${project.project_picture_url}`}
             alt={project.title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -525,7 +527,7 @@ const TeamMemberCard: React.FC<TeamMemberCardProps> = ({ member }) => (
         <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center overflow-hidden">
           {member.profile_picture_url ? (
             <Image
-              src={`http://localhost:5000${member.profile_picture_url}`}
+              src={`${backendUrl}${member.profile_picture_url}`}
               alt={`${member.first_name} ${member.last_name}`}
               width={96}
               height={96}
@@ -647,7 +649,7 @@ const MillerBitLanding: React.FC = () => {
     const fetchProjects = async () => {
       try {
         const response = await fetch(
-          "http://localhost:5000/api/projects/landingProjects"
+          `${backendUrl}/api/projects/landingProjects`
         );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -685,7 +687,7 @@ const MillerBitLanding: React.FC = () => {
     const fetchStats = async () => {
       try {
         const response = await fetch(
-          "http://localhost:5000/api/dashboard/overview"
+          `${backendUrl}/api/dashboard/overview`
         );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -699,7 +701,7 @@ const MillerBitLanding: React.FC = () => {
 
     const fetchTeamMembers = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/users/get/landingUser");
+        const response = await fetch(`${backendUrl}/api/users/get/landingUser`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
