@@ -84,7 +84,7 @@ export default function EditMemberProfilePage() {
         const headers: HeadersInit = { Authorization: `Bearer ${token}` };
 
         // Fetch Basic Member Details
-        const memberResponse = await fetch(`http://localhost:5000/api/users/${userId}`, { headers });
+        const memberResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/${userId}`, { headers });
         if (memberResponse.status === 403) {
             setError("Access Denied: You do not have permission to edit this profile.");
             setLoading(false);
@@ -97,11 +97,11 @@ export default function EditMemberProfilePage() {
         setMember(memberData);
         setFormData(memberData);
         if (memberData.profile_picture_url) {
-            setProfilePicturePreview(`http://localhost:5000${memberData.profile_picture_url}`);
+            setProfilePicturePreview(`${process.env.NEXT_PUBLIC_BACKEND_URL}${memberData.profile_picture_url}`);
         }
 
         // Fetch All Available Skills
-        const allSkillsResponse = await fetch(`http://localhost:5000/api/skills`, { headers });
+        const allSkillsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/skills`, { headers });
         if (!allSkillsResponse.ok) {
           console.warn(`Failed to fetch all skills: ${allSkillsResponse.status}`);
           setAvailableSkills([]);
@@ -111,7 +111,7 @@ export default function EditMemberProfilePage() {
         }
 
         // Fetch Member Skills
-        const userSkillsResponse = await fetch(`http://localhost:5000/api/users/${userId}/skills`, { headers });
+        const userSkillsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/${userId}/skills`, { headers });
         if (!userSkillsResponse.ok) {
           console.warn(`Failed to fetch skills for user ${userId}: ${userSkillsResponse.status}`);
           setCurrentSkills([]);
@@ -197,7 +197,7 @@ export default function EditMemberProfilePage() {
       setProfilePictureFile(null);
       // Revert preview to existing URL if file is cleared
       if (member?.profile_picture_url) {
-        setProfilePicturePreview(`http://localhost:5000${member.profile_picture_url}`);
+        setProfilePicturePreview(`${process.env.NEXT_PUBLIC_BACKEND_URL}${member.profile_picture_url}`);
       } else {
         setProfilePicturePreview(null);
       }
@@ -225,7 +225,7 @@ export default function EditMemberProfilePage() {
       const formData = new FormData();
       formData.append('profile_picture', profilePictureFile);
 
-      const response = await fetch(`http://localhost:5000/api/users/${userId}/profile-picture`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/${userId}/profile-picture`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -243,7 +243,7 @@ export default function EditMemberProfilePage() {
       setMember(prev => prev ? { ...prev, profile_picture_url: result.profile_picture_url } : null);
       setFormData(prev => prev ? { ...prev, profile_picture_url: result.profile_picture_url } : null);
       setProfilePictureFile(null); // Clear the selected file
-      setProfilePicturePreview(`http://localhost:5000${result.profile_picture_url}`); // Update preview to new uploaded image
+      setProfilePicturePreview(`${process.env.NEXT_PUBLIC_BACKEND_URL}${result.profile_picture_url}`); // Update preview to new uploaded image
 
       if (fileInputRef.current) { // Reset file input to clear selected file appearance
           fileInputRef.current.value = "";
@@ -295,7 +295,7 @@ export default function EditMemberProfilePage() {
         skills: currentSkills,
       };
 
-      const response = await fetch(`http://localhost:5000/api/users/${userId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/${userId}`, {
         method: 'PUT',
         headers: headers,
         body: JSON.stringify(updatePayload),

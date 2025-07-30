@@ -86,7 +86,7 @@ export default function MemberProfilePage() {
 
         // Fetch Member Details
         const memberResponse = await fetch(
-          `http://localhost:5000/api/users/${userId}`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/${userId}`,
           { headers }
         );
         if (!memberResponse.ok) {
@@ -99,7 +99,7 @@ export default function MemberProfilePage() {
 
         // Fetch Member Skills
         const skillsResponse = await fetch(
-          `http://localhost:5000/api/users/${userId}/skills`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/${userId}/skills`,
           { headers }
         );
         if (skillsResponse.ok) {
@@ -109,7 +109,7 @@ export default function MemberProfilePage() {
 
         // Fetch Member Projects
         const projectsResponse = await fetch(
-          `http://localhost:5000/api/users/${userId}/projects`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/${userId}/projects`,
           { headers }
         );
         if (projectsResponse.ok) {
@@ -220,7 +220,7 @@ export default function MemberProfilePage() {
                 <div className="relative h-40 w-40 rounded-full overflow-hidden border-4 border-white/20 shadow-2xl transform group-hover/avatar:scale-105 transition-transform duration-300">
                   {member.profile_picture_url ? (
                     <Image
-                      src={`http://localhost:5000${member.profile_picture_url}`}
+                      src={`${process.env.NEXT_PUBLIC_BACKEND_URL}${member.profile_picture_url}`}
                       alt={`${member.first_name} ${member.last_name}'s profile picture`}
                       layout="fill"
                       objectFit="cover"

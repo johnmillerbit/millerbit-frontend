@@ -102,7 +102,7 @@ const CreateMemberForm: React.FC<CreateMemberFormProps> = ({
         return;
       }
 
-      const response = await fetch("http://localhost:5000/api/users/create", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -274,7 +274,7 @@ const EditMemberForm: React.FC<EditMemberFormProps> = ({
       }
 
       const response = await fetch(
-        `http://localhost:5000/api/users/${formData.user_id}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/${formData.user_id}`,
         {
           method: "PUT",
           headers: {
@@ -589,7 +589,7 @@ export default function MemberManagementPage() {
         return;
       }
 
-      const response = await fetch("http://localhost:5000/api/users", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -658,7 +658,7 @@ export default function MemberManagementPage() {
       }
 
       const response = await fetch(
-        `http://localhost:5000/api/users/${memberToDelete.user_id}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/${memberToDelete.user_id}`,
         {
           method: "DELETE",
           headers: {
